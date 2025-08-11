@@ -186,78 +186,6 @@ if args.full:
     full_suspicious = deduplicate_alerts(full_suspicious)
 else:
     alerts = deduplicate_alerts(alerts)
-
-# Deduplicate alerts by IP and GPU
-# ----------------------------
-def deduplicate_alerts(alerts_list):
-    """Deduplicate alerts by IP and GPU, keeping the most recent occurrence"""
-    unique_alerts = {}
-    for alert in alerts_list:
-        key = (alert["node"], alert["gpu_id"])
-        if key not in unique_alerts or alert["timestamp"] > unique_alerts[key]["timestamp"]:
-            unique_alerts[key] = alert
-    return list(unique_alerts.values())
-
-# Deduplicate the alert lists
-if args.full:
-    full_high_temp = deduplicate_alerts(full_high_temp)
-    full_suspicious = deduplicate_alerts(full_suspicious)
-else:
-    alerts = deduplicate_alerts(alerts)
-
-# Deduplicate alerts by IP and GPU
-# ----------------------------
-def deduplicate_alerts(alerts_list):
-    """Deduplicate alerts by IP and GPU, keeping the most recent occurrence"""
-    unique_alerts = {}
-    for alert in alerts_list:
-        key = (alert["node"], alert["gpu_id"])
-        if key not in unique_alerts or alert["timestamp"] > unique_alerts[key]["timestamp"]:
-            unique_alerts[key] = alert
-    return list(unique_alerts.values())
-
-# Deduplicate the alert lists
-if args.full:
-    full_high_temp = deduplicate_alerts(full_high_temp)
-    full_suspicious = deduplicate_alerts(full_suspicious)
-else:
-    alerts = deduplicate_alerts(alerts)
-
-# Deduplicate alerts by IP and GPU
-# ----------------------------
-def deduplicate_alerts(alerts_list):
-    """Deduplicate alerts by IP and GPU, keeping the most recent occurrence"""
-    unique_alerts = {}
-    for alert in alerts_list:
-        key = (alert["node"], alert["gpu_id"])
-        if key not in unique_alerts or alert["timestamp"] > unique_alerts[key]["timestamp"]:
-            unique_alerts[key] = alert
-    return list(unique_alerts.values())
-
-# Deduplicate the alert lists
-if args.full:
-    full_high_temp = deduplicate_alerts(full_high_temp)
-    full_suspicious = deduplicate_alerts(full_suspicious)
-else:
-    alerts = deduplicate_alerts(alerts)
-
-# Deduplicate alerts by IP and GPU
-# ----------------------------
-def deduplicate_alerts(alerts_list):
-    """Deduplicate alerts by IP and GPU, keeping the most recent occurrence"""
-    unique_alerts = {}
-    for alert in alerts_list:
-        key = (alert["node"], alert["gpu_id"])
-        if key not in unique_alerts or alert["timestamp"] > unique_alerts[key]["timestamp"]:
-            unique_alerts[key] = alert
-    return list(unique_alerts.values())
-
-# Deduplicate the alert lists
-if args.full:
-    full_high_temp = deduplicate_alerts(full_high_temp)
-    full_suspicious = deduplicate_alerts(full_suspicious)
-else:
-    alerts = deduplicate_alerts(alerts)
 # ----------------------------
 if args.full:
     print("\n" + "=" * 60)
@@ -265,24 +193,14 @@ if args.full:
     print("=" * 60)
     
     if full_high_temp:
-        print(f"\n�� THROTTLED GPUs ({len(full_high_temp)} unique IP+GPU combinations):")
-        print("-" * 80)
-        print("IP Address        GPU     Temperature  Date/Time")
-        print("-" * 80)
+        print(f"\n🔥 THROTTLED GPUs ({len(full_high_temp)}):")
         for alert in full_high_temp:
-            timestamp = alert['timestamp'].replace("T", " ").split(".")[0]
-            print(f"{alert['node']:<15} {alert['gpu_id']:<8} {alert['temp']:>6.1f}°C     {timestamp:<20}")
-        print("-" * 80)
+            print(f"  • {alert['timestamp']} {alert['node']} {alert['gpu_id']} Temp: {alert['temp']}°C")
     
     if full_suspicious:
-        print(f"\n⚠️  THERMALLY FAILED GPUs ({len(full_suspicious)} unique IP+GPU combinations):")
-        print("-" * 80)
-        print("IP Address        GPU     Temperature  Date/Time")
-        print("-" * 80)
+        print(f"\n⚠️  THERMALLY FAILED GPUs ({len(full_suspicious)}):")
         for alert in full_suspicious:
-            timestamp = alert['timestamp'].replace("T", " ").split(".")[0]
-            print(f"{alert['node']:<15} {alert['gpu_id']:<8} {alert['temp']:>6.1f}°C     {timestamp:<20}")
-        print("-" * 80)
+            print(f"  • {alert['timestamp']} {alert['node']} {alert['gpu_id']} Temp: {alert['temp']}°C (Avg: {alert['avg_temp']}°C)")
     
     if not full_high_temp and not full_suspicious:
         print("✅ No alerts found in the specified time range")
@@ -291,24 +209,14 @@ else:
     print("🚨 CURRENT ALERTS")
     print("=" * 60)
     
-    # Filter for throttled alerts only
-    throttled_alerts = [alert for alert in alerts if alert["reason"] == "Throttled"]
-    
-    if throttled_alerts:
-        print(f"🔥 THROTTLED GPUs ({len(throttled_alerts)} unique IP+GPU combinations):")
-        print("-" * 80)
-        print("IP Address        GPU     Temperature  Date/Time")
-        print("-" * 80)
-    print("=" * 60)
-    
     if alerts:
         print("-" * 80)
         print("IP Address        GPU     Temperature  Date/Time")
         print("-" * 80)
-        for alert in throttled_alerts:
-
+        for alert in alerts:
+            if alert["reason"] == "Throttled":
                 timestamp = alert['timestamp'].replace("T", " ").split(".")[0]
                 print(f"{alert['node']:<15} {alert['gpu_id']:<8} {alert['temp']:>6.1f}°C     {timestamp:<20}")
         print("-" * 80)
     else:
-        print(f"✅ No throttled GPUs found (checked {len(alerts)} total alerts)")
+        print("✅ No current alerts found")
