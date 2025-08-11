@@ -47,7 +47,7 @@ if args.full:
     end_time = int(datetime.strptime(args.end_date, "%Y-%m-%d").timestamp()) if args.end_date else int(datetime.now().timestamp())
 else:
     end_time = int(datetime.now().timestamp())
-    start_time = int((datetime.now() - timedelta(hours=1)).timestamp())
+    start_time = int((datetime.now() - timedelta(days=7)).timestamp())
 
 print(f"🔍 Time range for investigation:")
 print(f"   Start: {datetime.fromtimestamp(start_time).isoformat()}")
@@ -115,7 +115,7 @@ for dev_path in device_paths:
         avg_temp = sum(temps.values()) / len(temps)
 
         for gpu_id, temp in temps.items():
-            if temp > 80:
+            if temp > 35:
                 alert = {
                     "node": node,
                     "timestamp": datetime.fromtimestamp(ts).isoformat(),
@@ -220,13 +220,34 @@ else:
     print("=" * 60)
     
     if alerts:
-        print("-" * 80)
-        print("IP Address        GPU     Temperature  Date/Time")
-        print("-" * 80)
-        for alert in alerts:
-            if alert["reason"] == "Throttled":
+        # Check if we have any throttled GPUs
+        throttled_alerts = [alert for alert in alerts if alert["reason"] == "Throttled"]
+        thermally_failed_alerts = [alert for alert in alerts if alert["reason"] == "Thermally Failed"]
+        
+        if throttled_alerts:
+            print("🔥 THROTTLED GPUs:")
+            print("-" * 80)
+            print("IP Address        GPU     Temperature  Date/Time")
+            print("-" * 80)
+            for alert in throttled_alerts:
                 timestamp = alert['timestamp'].replace("T", " ").split(".")[0]
                 print(f"{alert['node']:<15} {alert['gpu_id']:<8} {alert['temp']:>6.1f}°C     {timestamp:<20}")
-        print("-" * 80)
+            print("-" * 80)
+        else:
+            print("🔥 THROTTLED GPUs:")
+            print("✅ No throttled GPUs found")
+            
+        if thermally_failed_alerts:
+            print("\n⚠️  THERMALLY FAILED GPUs:")
+            print("-" * 80)
+            print("IP Address        GPU     Temperature  Date/Time")
+            print("-" * 80)
+            for alert in thermally_failed_alerts:
+                timestamp = alert['timestamp'].replace("T", " ").split(".")[0]
+                print(f"{alert['node']:<15} {alert['gpu_id']:<8} {alert['temp']:>6.1f}°C     {timestamp:<20}")
+            print("-" * 80)
+        else:
+            print("\n⚠️  THERMALLY FAILED GPUs:")
+            print("✅ No thermally failed GPUs found")
     else:
         print("✅ No current alerts found")
