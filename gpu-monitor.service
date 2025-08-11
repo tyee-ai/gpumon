@@ -1,0 +1,16 @@
+[Unit]
+Description=GPU Monitoring Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=drew
+WorkingDirectory=/home/drew/src/gpumon
+Environment=RRD_DATA_PATH=/opt/docker/volumes/docker-observium_config/_data/rrd
+Environment=FLASK_ENV=production
+ExecStart=/home/drew/src/gpumon/venv/bin/python web_app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
