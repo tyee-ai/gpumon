@@ -137,32 +137,22 @@ function displaySummaryCards(summary) {
 }
 
 function displayThrottledAlerts(alerts) {
-    const container = document.getElementById('throttledAlerts');
+    const container = document.getElementById("throttledAlerts");
     
     if (!alerts || alerts.length === 0) {
-        container.innerHTML = '<div class="alert alert-success">✅ No throttled GPUs found</div>';
+        container.innerHTML = "<tr><td colspan="4" class="text-center text-success">✅ No throttled GPUs found</td></tr>";
         return;
     }
     
-    let html = '';
+    let html = "";
     alerts.forEach(alert => {
         html += `
-            <div class="alert alert-danger alert-card alert-throttled">
-                <div class="row">
-                    <div class="col-md-3">
-                        <strong><i class="fas fa-fire"></i> ${alert.gpu_id}</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Device:</strong> ${alert.device}
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Temperature:</strong> ${alert.temp}°C
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Time:</strong> ${formatTimestamp(alert.timestamp)}
-                    </div>
-                </div>
-            </div>
+            <tr>
+                <td><strong>${alert.device}</strong></td>
+                <td><strong>${alert.gpu_id}</strong></td>
+                <td><strong class="text-danger">${alert.temp}°C</strong></td>
+                <td>${formatTimestamp(alert.timestamp)}</td>
+            </tr>
         `;
     });
     
@@ -170,38 +160,25 @@ function displayThrottledAlerts(alerts) {
 }
 
 function displayThermallyFailedAlerts(alerts) {
-    const container = document.getElementById('thermallyFailedAlerts');
+    const container = document.getElementById("thermallyFailedAlerts");
     
     if (!alerts || alerts.length === 0) {
-        container.innerHTML = '<div class="alert alert-success">✅ No thermally failed GPUs found</div>';
-        container.style.display = 'none';
+        container.innerHTML = "<tr><td colspan="4" class="text-center text-success">✅ No thermally failed GPUs found</td></tr>";
+        container.style.display = "none";
         return;
     }
     
-    container.style.display = 'block';
+    container.style.display = "block";
     
-    let html = '';
+    let html = "";
     alerts.forEach(alert => {
         html += `
-            <div class="alert alert-warning alert-card alert-thermally-failed">
-                <div class="row">
-                    <div class="col-md-2">
-                        <strong><i class="fas fa-exclamation-triangle"></i> ${alert.gpu_id}</strong>
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Device:</strong> ${alert.device}
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Temperature:</strong> ${alert.temp}°C
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Average:</strong> ${alert.avg_temp}°C
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Time:</strong> ${formatTimestamp(alert.timestamp)}
-                    </div>
-                </div>
-            </div>
+            <tr>
+                <td><strong>${alert.device}</strong></td>
+                <td><strong>${alert.gpu_id}</strong></td>
+                <td><strong class="text-warning">${alert.temp}°C</strong></td>
+                <td>${formatTimestamp(alert.timestamp)}</td>
+            </tr>
         `;
     });
     
