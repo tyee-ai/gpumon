@@ -116,6 +116,54 @@ def deduplicate_alerts(alerts):
             unique_alerts.append(alert)
     
     return unique_alerts
+
+def aggregate_throttled_alerts(alerts):
+    """Aggregate throttled alerts by GPU to show first/last date, temperature, and total days"""
+    gpu_data = {}
+    
+    for alert in alerts:
+        key = (alert["device"], alert["gpu_id"])
+        if key not in gpu_data:
+            gpu_data[key] = {
+                "device": alert["device"],
+                "gpu_id": alert["gpu_id"],
+                "first_date": alert["timestamp"],
+                "last_date": alert["timestamp"],
+                "max_temp": alert["temp"],
+                "count": 1
+            }
+        else:
+            # Update last date, max temp, and increment count
+            if alert["timestamp"] < gpu_data[key]["first_date"]:
+                gpu_data[key]["first_date"] = alert["timestamp"]
+            if alert["timestamp"] > gpu_data[key]["last_date"]:
+                gpu_data[key]["last_date"] = alert["timestamp"]
+            if alert["temp"] > gpu_data[key]["max_temp"]:
+                gpu_data[key]["max_temp"] = alert["temp"]
+            gpu_data[key]["count"] += 1
+    
+    # Convert back to list and calculate days
+    aggregated = []
+    for data in gpu_data.values():
+        # Calculate days between first and last date
+        try:
+            from datetime import datetime
+            first_date = datetime.fromisoformat(data["first_date"].replace("Z", "+00:00"))
+            last_date = datetime.fromisoformat(data["last_date"].replace("Z", "+00:00"))
+            days_throttled = (last_date - first_date).days + 1  # +1 to include both start and end dates
+        except:
+            days_throttled = data["count"]
+        
+        aggregated.append({
+            "device": data["device"],
+            "gpu_id": data["gpu_id"],
+            "first_date": data["first_date"],
+            "last_date": data["last_date"],
+            "max_temp": data["max_temp"],
+            "days_throttled": days_throttled
+        })
+    
+    return aggregated
     """Remove duplicate alerts based on IP, GPU, and data (timestamp)"""
     seen = set()
     unique_alerts = []
@@ -131,6 +179,54 @@ def deduplicate_alerts(alerts):
             unique_alerts.append(alert)
     
     return unique_alerts
+
+def aggregate_throttled_alerts(alerts):
+    """Aggregate throttled alerts by GPU to show first/last date, temperature, and total days"""
+    gpu_data = {}
+    
+    for alert in alerts:
+        key = (alert["device"], alert["gpu_id"])
+        if key not in gpu_data:
+            gpu_data[key] = {
+                "device": alert["device"],
+                "gpu_id": alert["gpu_id"],
+                "first_date": alert["timestamp"],
+                "last_date": alert["timestamp"],
+                "max_temp": alert["temp"],
+                "count": 1
+            }
+        else:
+            # Update last date, max temp, and increment count
+            if alert["timestamp"] < gpu_data[key]["first_date"]:
+                gpu_data[key]["first_date"] = alert["timestamp"]
+            if alert["timestamp"] > gpu_data[key]["last_date"]:
+                gpu_data[key]["last_date"] = alert["timestamp"]
+            if alert["temp"] > gpu_data[key]["max_temp"]:
+                gpu_data[key]["max_temp"] = alert["temp"]
+            gpu_data[key]["count"] += 1
+    
+    # Convert back to list and calculate days
+    aggregated = []
+    for data in gpu_data.values():
+        # Calculate days between first and last date
+        try:
+            from datetime import datetime
+            first_date = datetime.fromisoformat(data["first_date"].replace("Z", "+00:00"))
+            last_date = datetime.fromisoformat(data["last_date"].replace("Z", "+00:00"))
+            days_throttled = (last_date - first_date).days + 1  # +1 to include both start and end dates
+        except:
+            days_throttled = data["count"]
+        
+        aggregated.append({
+            "device": data["device"],
+            "gpu_id": data["gpu_id"],
+            "first_date": data["first_date"],
+            "last_date": data["last_date"],
+            "max_temp": data["max_temp"],
+            "days_throttled": days_throttled
+        })
+    
+    return aggregated
 
 
 def parse_analysis_output(output, alert_type):
@@ -212,7 +308,7 @@ def parse_analysis_output(output, alert_type):
 
     # Apply deduplication to both alert types
     if alert_type in ["throttled", "both"]:
-        results["throttled"] = deduplicate_alerts(results["throttled"])
+        results["throttled"] = aggregate_throttled_alerts(results["throttled"])
     if alert_type in ["thermally_failed", "both"]:
         results["thermally_failed"] = deduplicate_alerts(results["thermally_failed"])
     

@@ -144,7 +144,7 @@ function displayThrottledAlerts(alerts) {
     
     if (!alerts || alerts.length === 0) {
         const row = document.createElement("tr");
-        row.innerHTML = "<td colspan=\"4\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
+        row.innerHTML = "<td colspan=\"6\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
         container.appendChild(row);
         return;
     }
@@ -154,8 +154,10 @@ function displayThrottledAlerts(alerts) {
         row.innerHTML = `
             <td><strong>${alert.device}</strong></td>
             <td><strong>${alert.gpu_id}</strong></td>
-            <td><strong class=\"text-danger\">${alert.temp}°C</strong></td>
-            <td>${formatTimestamp(alert.timestamp)}</td>
+            <td><strong class=\"text-danger\">${alert.max_temp}°C</strong></td>
+            <td>${formatTimestamp(alert.first_date)}</td>
+            <td>${formatTimestamp(alert.last_date)}</td>
+            <td><strong class=\"text-danger\">${alert.days_throttled} days</strong></td>
         `;
         container.appendChild(row);
     });
