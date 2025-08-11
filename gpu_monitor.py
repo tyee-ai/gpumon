@@ -5,6 +5,8 @@ Filters by throttled GPUs and temperature differentials
 """
 
 import os
+import sys
+sys.path.append("/usr/lib/python3/dist-packages")
 import rrdtool
 from datetime import datetime, timedelta
 from pathlib import Path
