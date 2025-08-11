@@ -7,7 +7,7 @@ export RRD_DATA_PATH="/opt/docker/volumes/docker-observium_config/_data/rrd"
 
 echo "✅ RRD_DATA_PATH set to: $RRD_DATA_PATH"
 echo "🌐 Starting web app on port 8090..."
-echo "📊 Access the dashboard at: http://localhost:8090"
+echo "📊 Access the dashboard at: http://192.168.1.247:8090"
 echo ""
 
 # Start the web application

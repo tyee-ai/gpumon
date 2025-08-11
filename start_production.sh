@@ -28,8 +28,8 @@ echo "   FLASK_DEBUG: $FLASK_DEBUG"
 
 echo ""
 echo "🌐 Starting GPU Monitoring Web Application..."
-echo "📊 Dashboard will be available at: http://localhost:8090"
-echo "📊 API endpoint: http://localhost:8090/api/analysis"
+echo "📊 Dashboard will be available at: http://192.168.1.247:8090"
+echo "📊 API endpoint: http://192.168.1.247:8090/api/analysis"
 echo ""
 echo "Press Ctrl+C to stop the application"
 

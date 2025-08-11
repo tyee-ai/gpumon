@@ -321,4 +321,4 @@ def get_sites():
     return jsonify(SITES)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8090, debug=True)
+    app.run(host='192.168.1.247', port=8090, debug=True)
