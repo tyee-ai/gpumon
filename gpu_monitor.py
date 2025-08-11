@@ -204,6 +204,24 @@ if args.full:
     full_suspicious = deduplicate_alerts(full_suspicious)
 else:
     alerts = deduplicate_alerts(alerts)
+
+# Deduplicate alerts by IP and GPU
+# ----------------------------
+def deduplicate_alerts(alerts_list):
+    """Deduplicate alerts by IP and GPU, keeping the most recent occurrence"""
+    unique_alerts = {}
+    for alert in alerts_list:
+        key = (alert["node"], alert["gpu_id"])
+        if key not in unique_alerts or alert["timestamp"] > unique_alerts[key]["timestamp"]:
+            unique_alerts[key] = alert
+    return list(unique_alerts.values())
+
+# Deduplicate the alert lists
+if args.full:
+    full_high_temp = deduplicate_alerts(full_high_temp)
+    full_suspicious = deduplicate_alerts(full_suspicious)
+else:
+    alerts = deduplicate_alerts(alerts)
 # ----------------------------
 if args.full:
     print("\n" + "=" * 60)
@@ -247,4 +265,4 @@ else:
                 print(f"{alert['node']:<15} {alert['gpu_id']:<8} {alert['temp']:>6.1f}°C     {timestamp:<20}")
         print("-" * 80)
     else:
-        print("✅ No current alerts found")
+        print(f"✅ No throttled GPUs found (checked {len(alerts)} total alerts)")
