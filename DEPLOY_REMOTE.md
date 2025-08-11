@@ -22,7 +22,7 @@ docker build -f Dockerfile.prod -t gpumon:prod .
 docker run -d \
   --name gpumon-prod \
   -p 8090:5000 \
-  -v /path/to/your/rrd/files:/app/data:ro \
+  -v /opt/docker/volumes/docker-observium_config/_data/rrd:/app/data:ro \
   -v /var/log/gpumon:/app/logs \
   --restart unless-stopped \
   gpumon:prod
@@ -54,7 +54,7 @@ docker logs gpumon-prod
 If you still get permission errors:
 ```bash
 # Check what user owns the RRD files
-ls -la /path/to/your/rrd/files
+ls -la /opt/docker/volumes/docker-observium_config/_data/rrd
 
 # You might need to adjust file permissions or mount differently
 ```
@@ -63,7 +63,7 @@ ls -la /path/to/your/rrd/files
 Make sure the volume mount points to the correct RRD directory:
 ```bash
 # Example for Ganglia RRD files
--v /var/lib/ganglia/rrds:/app/data:ro
+-v /opt/docker/volumes/docker-observium_config/_data/rrd:/app/data:ro
 
 # Example for custom RRD location
 -v /opt/gpu-monitoring/rrd:/app/data:ro

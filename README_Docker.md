@@ -81,3 +81,10 @@ docker exec -it gpumon-app bash
 ```bash
 docker inspect gpumon-app | grep Health -A 10
 ```
+
+## Observium RRD Integration
+
+This application is configured to work with Observium RRD files located at:
+`/opt/docker/volumes/docker-observium_config/_data/rrd`
+
+Use the `deploy_observium.sh` script for easy deployment on hosts with Observium.
