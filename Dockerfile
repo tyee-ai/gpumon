@@ -19,8 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+# Note: Running as root to access RRD files that require elevated permissions
 
 # Expose port
 EXPOSE 5000
