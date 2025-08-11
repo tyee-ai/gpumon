@@ -14,8 +14,8 @@ import re
 # ----------------------------
 # Configurable Defaults
 # ----------------------------
-SITE = 14
-DEFAULT_BASE_PATH = "/opt/docker/volumes/ce6610072ec75cc34f7d4e362f935736e47de7c0d59344d518393aa288805333/_data/rrd"
+SITE = 4
+DEFAULT_BASE_PATH = "/opt/docker/volumes/docker-observium_config/_data/rrd"
 
 GPU_MAP = {
     "1.4": "GPU_21",

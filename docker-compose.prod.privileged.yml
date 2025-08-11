@@ -4,8 +4,8 @@ services:
   gpumon:
     build:
       context: .
-      dockerfile: Dockerfile.prod
-    container_name: gpumon-app
+      dockerfile: Dockerfile.prod.privileged
+    container_name: gpumon-app-prod-privileged
     ports:
       - "8090:5000"
     environment:
@@ -13,11 +13,16 @@ services:
       - FLASK_DEBUG=0
       - RRD_DATA_PATH=/app/data
     volumes:
-      # Mount RRD data directory if you have one
+      # Mount Observium RRD data directory with privileged access
       - /opt/docker/volumes/docker-observium_config/_data/rrd:/app/data:ro
       # Mount logs directory
       - ./logs:/app/logs
     restart: unless-stopped
+    privileged: true  # This gives the container elevated privileges
+    security_opt:
+      - seccomp:unconfined  # Disable seccomp for full access
+    cap_add:
+      - ALL  # Add all capabilities
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s

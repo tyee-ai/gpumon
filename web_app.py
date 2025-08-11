@@ -60,7 +60,7 @@ def run_analysis():
         # Build command for gpu_monitor.py
         cmd = [
             'python3', 'gpu_monitor.py',
-            '--base-path', '/opt/docker/volumes/docker-observium_config/_data/rrd',
+            "--base-path", os.environ.get("RRD_DATA_PATH", "/app/data"),
             '--site', site_id,
             '--full',
             '--start-date', start_date,
@@ -321,4 +321,4 @@ def get_sites():
     return jsonify(SITES)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8090, debug=True)
