@@ -101,6 +101,38 @@ def run_analysis():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def deduplicate_alerts(alerts):
+    """Remove duplicate alerts based on IP and GPU only"""
+    seen = set()
+    unique_alerts = []
+    
+    for alert in alerts:
+        # Create a key based on IP (device) and GPU only
+        # This will show one record per unique IP+GPU combination
+        key = (alert["device"], alert["gpu_id"])
+        
+        if key not in seen:
+            seen.add(key)
+            unique_alerts.append(alert)
+    
+    return unique_alerts
+    """Remove duplicate alerts based on IP, GPU, and data (timestamp)"""
+    seen = set()
+    unique_alerts = []
+    
+    for alert in alerts:
+        # Create a key based on IP (device), GPU, and timestamp
+        # Extract IP from device name (e.g., "device-10.4.1.1" -> "10.4.1.1")
+        ip = alert["device"].replace("device-", "")
+        key = (ip, alert["gpu_id"], alert["timestamp"])
+        
+        if key not in seen:
+            seen.add(key)
+            unique_alerts.append(alert)
+    
+    return unique_alerts
+
+
 def parse_analysis_output(output, alert_type):
     """Parse the analysis output and filter by alert type"""
     results = {
@@ -177,6 +209,14 @@ def parse_analysis_output(output, alert_type):
             elif 'Normal:' in line:
                 results['summary']['normal_count'] = line.split(':')[1].strip()
     
+
+    # Apply deduplication to both alert types
+    if alert_type in ["throttled", "both"]:
+        results["throttled"] = deduplicate_alerts(results["throttled"])
+    if alert_type in ["thermally_failed", "both"]:
+        results["thermally_failed"] = deduplicate_alerts(results["thermally_failed"])
+    
+
     return results
 
 @app.route('/api/sites')
