@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPU RRD Monitor - DFW2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0891b2;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            margin: 24px auto;
+            padding: 0;
+            overflow: hidden;
+            max-width: 1400px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            color: white;
+            padding: 40px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin: 0;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .icon {
+            font-size: 2rem;
+            margin-right: 16px;
+            opacity: 0.9;
+        }
+
+        .content-wrapper {
+            padding: 32px;
+        }
+
+        .form-section {
+            background-color: white;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .form-section h3 {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-section h3 .icon {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid var(--border-color);
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background-color: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: #cbd5e1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            border: none;
+            padding: 14px 32px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-hover) 0%, #1e3a8a 100%);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: var(--secondary-color);
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 48px 0;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary-color);
+        }
+
+        .loading-spinner p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 16px;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .summary-throttled::before {
+            background: linear-gradient(90deg, var(--danger-color) 0%, #ef4444 100%);
+        }
+
+        .summary-thermally-failed::before {
+            background: linear-gradient(90deg, var(--warning-color) 0%, #f59e0b 100%);
+        }
+
+        .summary-total::before {
+            background: linear-gradient(90deg, var(--success-color) 0%, #10b981 100%);
+        }
+
+        .summary-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 8px 0;
+            line-height: 1;
+        }
+
+        .summary-throttled .number {
+            color: var(--danger-color);
+        }
+
+        .summary-thermally-failed .number {
+            color: var(--warning-color);
+        }
+
+        .summary-total .number {
+            color: var(--success-color);
+        }
+
+        .summary-card .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card .icon {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+
+        .alert-section {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 16px 0;
+            margin-bottom: 16px;
+            box-shadow: none;
+        }
+
+        .alert-section h3 {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-section h3 .icon {
+            font-size: 1.1rem;
+        }
+
+        .alert-card {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 12px 16px;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .alert-card:nth-child(even) {
+            background-color: var(--light-bg);
+        }
+        
+        .alert-card:last-child {
+            border-bottom: none;
+        }
+        
+        .alert-card:last-child {
+            border-bottom: none;
+        }
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 12px 16px;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert-card:hover {
+            transform: none;
+            box-shadow: none;
+            background-color: var(--light-bg);
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .alert-card::before {
+            display: none;
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .alert-throttled {
+            border-left-color: var(--danger-color);
+        }
+
+        .alert-throttled::before {
+            background: var(--danger-color);
+        }
+
+        .alert-thermally-failed {
+            border-left-color: var(--warning-color);
+        }
+
+        .alert-thermally-failed::before {
+            background: var(--warning-color);
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .alert-device {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .alert-timestamp {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .alert-details {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .alert-temp {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .alert-throttled .alert-temp {
+            color: var(--danger-color);
+        }
+
+        .alert-thermally-failed .alert-temp {
+            color: var(--warning-color);
+        }
+
+        .alert-avg {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .alert-type-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .alert-throttled .alert-type-badge {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--danger-color);
+        }
+
+        .alert-thermally-failed .alert-type-badge {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--warning-color);
+        }
+
+        .raw-output-section {
+            background: var(--light-bg);
+            margin-top: 32px;
+        }
+
+        .raw-output-section h4 {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .raw-output-section h4 .icon {
+            color: var(--secondary-color);
+        }
+
+        .raw-output-section pre {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .no-alerts {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-secondary);
+        }
+
+        .no-alerts .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .no-alerts h4 {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .no-alerts p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 12px;
+            }
+            
+            .header {
+                padding: 24px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content-wrapper {
+                padding: 20px;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .alert-details {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header">
+                <h1><i class="fas fa-microchip icon"></i> GPU RRD Monitor</h1>
+                <p>DFW2 Data Center GPU Temperature Analysis & Alerting System</p>
+            </div>
+
+            <div class="content-wrapper">
+                <!-- Analysis Form -->
+                <div class="form-section">
+                    <h3>
+                        <i class="fas fa-cog icon"></i>
+                        Analysis Configuration
+                    </h3>
+                    <form id="analysisForm">
+                        <div class="row g-3">
+                            <div class="col-lg-3 col-md-6">
+                                <label for="site" class="form-label">Site</label>
+                                <select class="form-select" id="site" name="site" required>
+                                    <option value="DFW2">DFW2 - Dallas-Fort Worth DC2</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" required>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <label for="alert_type" class="form-label">Alert Type</label>
+                                <select class="form-select" id="alert_type" name="alert_type" required>
+                                    <option value="both">Both Types</option>
+                                    <option value="throttled">Throttled Only</option>
+                                    <option value="thermally_failed">Thermally Failed Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-search me-2"></i>Run Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Running GPU analysis... This may take a few minutes.</p>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section" id="resultsSection">
+                    <!-- Summary Cards -->
+                    <div class="summary-cards" id="summaryCards"></div>
+
+                    <!-- Throttled GPUs -->
+                    <div class="alert-section" id="throttledSection">
+                        <h3>
+                            <i class="fas fa-fire icon" style="color: var(--danger-color);"></i>
+                            Throttled GPUs
+                        </h3>
+                        <div id="throttledAlerts"></div>
+                    </div>
+
+                    <!-- Thermally Failed GPUs -->
+                    <div class="alert-section" id="thermallyFailedSection">
+                        <h3>
+                            <i class="fas fa-exclamation-triangle icon" style="color: var(--warning-color);"></i>
+                            Thermally Failed GPUs
+                        </h3>
+                        <div id="thermallyFailedAlerts"></div>
+                    </div>
+
+                    <!-- Raw Output -->
+                    <div class="raw-output-section">
+                        <h4>
+                            <i class="fas fa-terminal icon"></i>
+                            Raw Analysis Output
+                        </h4>
+                        <pre id="rawOutput"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

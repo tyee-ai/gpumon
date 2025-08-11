@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  gpu-rrd-monitor:
+    build: .
+    container_name: gpu-rrd-monitor-real
+    ports:
+      - "5001:5000"
+    volumes:
+      # Use the local test RRD data
+      - ./rrd-data:/rrd-data:ro
+    environment:
+      - SITE=4
+      - BASE_PATH=/rrd-data
+    # The web interface will be available at http://localhost:5001

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  gpu-rrd-monitor:
+    build: .
+    container_name: gpu-rrd-monitor-test
+    ports:
+      - "5000:5000"
+    volumes:
+      # For testing, we'll create a dummy RRD data directory
+      - ./rrd-data:/rrd-data:ro
+    environment:
+      - SITE=4
+      - BASE_PATH=/rrd-data
+    # This is for testing the web interface without real RRD data

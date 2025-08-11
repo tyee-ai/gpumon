@@ -1,0 +1,43 @@
+# RRD data files and directories
+rrd-data/
+test-rrd-data/
+*.rrd
+
+# Symlinks
+rrd-data
+
+# Temporary files
+*.temp
+*.backup
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker volumes
+docker-volumes/
