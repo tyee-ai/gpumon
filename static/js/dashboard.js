@@ -139,52 +139,54 @@ function displaySummaryCards(summary) {
 function displayThrottledAlerts(alerts) {
     const container = document.getElementById("throttledAlerts");
     
+    // Clear existing content
+    container.innerHTML = "";
+    
     if (!alerts || alerts.length === 0) {
-        container.innerHTML = "<tr><td colspan="4" class="text-center text-success">✅ No throttled GPUs found</td></tr>";
+        const row = document.createElement("tr");
+        row.innerHTML = "<td colspan=\"4\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
+        container.appendChild(row);
         return;
     }
     
-    let html = "";
     alerts.forEach(alert => {
-        html += `
-            <tr>
-                <td><strong>${alert.device}</strong></td>
-                <td><strong>${alert.gpu_id}</strong></td>
-                <td><strong class="text-danger">${alert.temp}°C</strong></td>
-                <td>${formatTimestamp(alert.timestamp)}</td>
-            </tr>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><strong>${alert.device}</strong></td>
+            <td><strong>${alert.gpu_id}</strong></td>
+            <td><strong class=\"text-danger\">${alert.temp}°C</strong></td>
+            <td>${formatTimestamp(alert.timestamp)}</td>
         `;
+        container.appendChild(row);
     });
-    
-    container.innerHTML = html;
 }
-
 function displayThermallyFailedAlerts(alerts) {
     const container = document.getElementById("thermallyFailedAlerts");
     
+    // Clear existing content
+    container.innerHTML = "";
+    
     if (!alerts || alerts.length === 0) {
-        container.innerHTML = "<tr><td colspan="4" class="text-center text-success">✅ No thermally failed GPUs found</td></tr>";
+        const row = document.createElement("tr");
+        row.innerHTML = "<td colspan=\"4\" class=\"text-center text-success\">✅ No thermally failed GPUs found</td>";
+        container.appendChild(row);
         container.style.display = "none";
         return;
     }
     
     container.style.display = "block";
     
-    let html = "";
     alerts.forEach(alert => {
-        html += `
-            <tr>
-                <td><strong>${alert.device}</strong></td>
-                <td><strong>${alert.gpu_id}</strong></td>
-                <td><strong class="text-warning">${alert.temp}°C</strong></td>
-                <td>${formatTimestamp(alert.timestamp)}</td>
-            </tr>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><strong>${alert.device}</strong></td>
+            <td><strong>${alert.gpu_id}</strong></td>
+        <td><strong class=\"text-warning\">${alert.temp}°C</strong></td>
+            <td>${formatTimestamp(alert.timestamp)}</td>
         `;
+        container.appendChild(row);
     });
-    
-    container.innerHTML = html;
 }
-
 function formatTimestamp(timestamp) {
     try {
         const date = new Date(timestamp);
