@@ -31,12 +31,12 @@ docker build -t gpumon .
 
 ### Run the container
 ```bash
-docker run -p 5000:5000 gpumon
+docker run -p 8090:5000 gpumon
 ```
 
 ### Run with custom data directory
 ```bash
-docker run -p 5000:5000 -v /path/to/rrd/data:/app/data:ro gpumon
+docker run -p 8090:5000 -v /path/to/rrd/data:/app/data:ro gpumon
 ```
 
 ## Environment Variables

@@ -5,7 +5,7 @@ services:
     build: .
     container_name: gpumon-app
     ports:
-      - "5000:5000"
+      - "8090:5000"
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
