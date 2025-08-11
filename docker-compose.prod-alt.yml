@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  gpumon:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: gpumon-app-prod-alt
+    ports:
+      - "8091:5000"  # Using port 8091 instead of 8090
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+    volumes:
+      # Mount Observium RRD data directory
+      - /opt/docker/volumes/docker-observium_config/_data/rrd:/app/data:ro
+      # Mount logs directory
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - gpumon-network
+
+networks:
+  gpumon-network:
+    driver: bridge
