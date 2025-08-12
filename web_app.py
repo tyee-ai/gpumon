@@ -276,13 +276,31 @@ def parse_analysis_output(output, alert_type):
         # Parse thermally failed GPUs
         elif current_section == 'thermally_failed' and line.startswith('•'):
             if alert_type in ['thermally_failed', 'both']:
-                # Parse: "• 2024-08-09T22:30:00 device-10.4.1.1 GPU_21 Temp: 45.2°C (Avg: 32.1°C)"
+                # Parse: "• 2024-08-09T22:30:00 device-10.4.1.1 GPU_21 Temp: 45.2°C (Avg: 32.1°C) - Nearest Cooler: GPU_23 at 35.0°C (diff: 10.2°C)"
                 parts = line.split(' ')
                 if len(parts) >= 6:
                     timestamp = parts[1]
                     device = parts[2]
                     gpu_id = parts[3]
                     temp = parts[5].replace('°C', '')
+                    
+                    # Extract nearest cooler GPU info if available
+                    nearest_cooler_gpu = "N/A"
+                    nearest_cooler_temp = "N/A"
+                    nearest_cooler_diff = "N/A"
+                    
+                    if " - Nearest Cooler: " in line:
+                        cooler_part = line.split(" - Nearest Cooler: ")[1]
+                        if " at " in cooler_part and " (diff: " in cooler_part:
+                            cooler_gpu = cooler_part.split(" at ")[0]
+                            temp_part = cooler_part.split(" at ")[1]
+                            cooler_temp = temp_part.split("°C")[0]
+                            diff_part = temp_part.split(" (diff: ")[1]
+                            cooler_diff = diff_part.split("°C")[0]
+                            
+                            nearest_cooler_gpu = cooler_gpu
+                            nearest_cooler_temp = cooler_temp
+                            nearest_cooler_diff = cooler_diff
                     avg_temp = parts[7].replace('°C', '').replace('(', '').replace(')', '')
                     
                     results['thermally_failed'].append({
