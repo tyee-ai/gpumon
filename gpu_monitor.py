@@ -77,6 +77,23 @@ device_paths = [Path(args.base_path) / dev for dev in devices]
 alerts = []
 full_high_temp = []
 full_suspicious = []
+def find_nearest_cooler_gpu(temps, failed_gpu_id, failed_temp, max_temp_diff=10):
+    """Find the nearest GPU with temperature <= max_temp_diff lower than the failed GPU"""
+    nearest_gpu = None
+    min_temp_diff = float("inf")
+    
+    for gpu_id, temp in temps.items():
+        if gpu_id == failed_gpu_id:
+            continue
+        
+        temp_diff = failed_temp - temp
+        if 0 <= temp_diff <= max_temp_diff:
+            if temp_diff < min_temp_diff:
+                min_temp_diff = temp_diff
+                nearest_gpu = {"gpu_id": gpu_id, "temp": temp, "temp_diff": temp_diff}
+    
+    return nearest_gpu
+
 latest_suspicious = {}
 actual_start = None
 actual_end = None
@@ -130,6 +147,9 @@ for dev_path in device_paths:
                 else:
                     alerts.append(alert)
             elif avg_temp < 30 and temp > avg_temp + 8:
+                # Find nearest GPU with temperature <= 10°C lower
+                nearest_cooler = find_nearest_cooler_gpu(temps, gpu_id, temp, 10)
+                cooler_info = nearest_cooler if nearest_cooler else {"gpu_id": "None", "temp": "N/A", "temp_diff": "N/A"}
                 if args.full:
                     full_suspicious.append({
                         "node": node,
@@ -137,7 +157,13 @@ for dev_path in device_paths:
                         "gpu_id": gpu_id,
                         "temp": round(temp, 2),
                         "avg_temp": round(avg_temp, 2),
-                        "reason": "Thermally Failed"
+                        "reason": "Thermally Failed",
+                            "nearest_cooler_gpu": cooler_info["gpu_id"],
+                            "nearest_cooler_temp": cooler_info["temp"],
+                            "nearest_cooler_diff": cooler_info["temp_diff"],
+                        "nearest_cooler_gpu": cooler_info["gpu_id"],
+                        "nearest_cooler_temp": cooler_info["temp"],
+                        "nearest_cooler_diff": cooler_info["temp_diff"]
                     })
                 else:
                     key = (node, gpu_id)
@@ -150,6 +176,12 @@ for dev_path in device_paths:
                             "temp": round(temp, 2),
                             "avg_temp": round(avg_temp, 2),
                             "reason": "Thermally Failed",
+                            "nearest_cooler_gpu": cooler_info["gpu_id"],
+                            "nearest_cooler_temp": cooler_info["temp"],
+                            "nearest_cooler_diff": cooler_info["temp_diff"],
+                        "nearest_cooler_gpu": cooler_info["gpu_id"],
+                        "nearest_cooler_temp": cooler_info["temp"],
+                        "nearest_cooler_diff": cooler_info["temp_diff"],
                             "ts": ts,
                             "count": existing["count"] + 1 if existing else 1
                         }
@@ -196,6 +228,6 @@ else:
     if alerts:
         for alert in alerts:
             if alert["reason"] == "Throttled":
-                print(f"🔥 {alert['timestamp']} {alert['node']} {alert['gpu_id']} Temp: {alert['temp']}°C")
-    else:
-        print("✅ No current alerts found")
+                print("🔥 {} {} {} Temp: {}°C".format(alert["timestamp"], alert["node"], alert["gpu_id"], alert["temp"]))
+            elif alert["reason"] == "Thermally Failed":
+                print("⚠️  {} {} {} Temp: {}°C (Avg: {}°C) - Nearest Cooler: {} at {}°C (diff: {}°C)".format(alert["timestamp"], alert["node"], alert["gpu_id"], alert["temp"], alert["avg_temp"], alert["nearest_cooler_gpu"], alert["nearest_cooler_temp"], alert["nearest_cooler_diff"]))
