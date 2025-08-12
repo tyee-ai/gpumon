@@ -137,81 +137,62 @@ function displaySummaryCards(summary) {
 }
 
 function displayThrottledAlerts(alerts) {
-    const container = document.getElementById('throttledAlerts');
+    const container = document.getElementById("throttledAlerts");
+    
+    // Clear existing content
+    container.innerHTML = "";
     
     if (!alerts || alerts.length === 0) {
-        container.innerHTML = '<div class="alert alert-success">✅ No throttled GPUs found</div>';
+        const row = document.createElement("tr");
+        row.innerHTML = "<td colspan=\"6\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
+        container.appendChild(row);
         return;
     }
     
-    let html = '';
     alerts.forEach(alert => {
-        html += `
-            <div class="alert alert-danger alert-card alert-throttled">
-                <div class="row">
-                    <div class="col-md-3">
-                        <strong><i class="fas fa-fire"></i> ${alert.gpu_id}</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Device:</strong> ${alert.device}
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Temperature:</strong> ${alert.temp}°C
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Time:</strong> ${formatTimestamp(alert.timestamp)}
-                    </div>
-                </div>
-            </div>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><strong>${alert.device}</strong></td>
+            <td><strong>${alert.gpu_id}</strong></td>
+            <td><strong class=\"text-danger\">${alert.max_temp}°C</strong></td>
+            <td>${formatTimestamp(alert.first_date)}</td>
+            <td>${formatTimestamp(alert.last_date)}</td>
+            <td><strong class=\"text-danger\">${alert.days_throttled} days</strong></td>
         `;
+        container.appendChild(row);
     });
-    
-    container.innerHTML = html;
 }
-
 function displayThermallyFailedAlerts(alerts) {
-    const container = document.getElementById('thermallyFailedAlerts');
+    const container = document.getElementById("thermallyFailedAlerts");
+    
+    // Clear existing content
+    container.innerHTML = "";
     
     if (!alerts || alerts.length === 0) {
-        container.innerHTML = '<div class="alert alert-success">✅ No thermally failed GPUs found</div>';
-        container.style.display = 'none';
+        const row = document.createElement("tr");
+        row.innerHTML = "<td colspan=\"4\" class=\"text-center text-success\">✅ No thermally failed GPUs found</td>";
+        container.appendChild(row);
+        container.style.display = "none";
         return;
     }
     
-    container.style.display = 'block';
+    container.style.display = "block";
     
-    let html = '';
     alerts.forEach(alert => {
-        html += `
-            <div class="alert alert-warning alert-card alert-thermally-failed">
-                <div class="row">
-                    <div class="col-md-2">
-                        <strong><i class="fas fa-exclamation-triangle"></i> ${alert.gpu_id}</strong>
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Device:</strong> ${alert.device}
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Temperature:</strong> ${alert.temp}°C
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Average:</strong> ${alert.avg_temp}°C
-                    </div>
-                    <div class="col-md-2">
-                        <strong>Time:</strong> ${formatTimestamp(alert.timestamp)}
-                    </div>
-                </div>
-            </div>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><strong>${alert.device}</strong></td>
+            <td><strong>${alert.gpu_id}</strong></td>
+        <td><strong class=\"text-warning\">${alert.temp}°C</strong></td>
+            <td>${formatTimestamp(alert.timestamp)}</td>
         `;
+        container.appendChild(row);
     });
-    
-    container.innerHTML = html;
 }
-
 function formatTimestamp(timestamp) {
     try {
         const date = new Date(timestamp);
-        return date.toLocaleString();
+        return date.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
     } catch (e) {
         return timestamp;
     }

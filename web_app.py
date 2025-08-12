@@ -60,7 +60,7 @@ def run_analysis():
         # Build command for gpu_monitor.py
         cmd = [
             'python3', 'gpu_monitor.py',
-            '--base-path', '/opt/docker/volumes/docker-observium_config/_data/rrd',
+            "--base-path", os.environ.get("RRD_DATA_PATH", "/app/data"),
             '--site', site_id,
             '--full',
             '--start-date', start_date,
@@ -100,6 +100,134 @@ def run_analysis():
         return jsonify({'error': 'Analysis timed out'}), 408
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+def deduplicate_alerts(alerts):
+    """Remove duplicate alerts based on IP and GPU only"""
+    seen = set()
+    unique_alerts = []
+    
+    for alert in alerts:
+        # Create a key based on IP (device) and GPU only
+        # This will show one record per unique IP+GPU combination
+        key = (alert["device"], alert["gpu_id"])
+        
+        if key not in seen:
+            seen.add(key)
+            unique_alerts.append(alert)
+    
+    return unique_alerts
+
+def aggregate_throttled_alerts(alerts):
+    """Aggregate throttled alerts by GPU to show first/last date, temperature, and total days"""
+    gpu_data = {}
+    
+    for alert in alerts:
+        key = (alert["device"], alert["gpu_id"])
+        if key not in gpu_data:
+            gpu_data[key] = {
+                "device": alert["device"],
+                "gpu_id": alert["gpu_id"],
+                "first_date": alert["timestamp"],
+                "last_date": alert["timestamp"],
+                "max_temp": alert["temp"],
+                "count": 1
+            }
+        else:
+            # Update last date, max temp, and increment count
+            if alert["timestamp"] < gpu_data[key]["first_date"]:
+                gpu_data[key]["first_date"] = alert["timestamp"]
+            if alert["timestamp"] > gpu_data[key]["last_date"]:
+                gpu_data[key]["last_date"] = alert["timestamp"]
+            if alert["temp"] > gpu_data[key]["max_temp"]:
+                gpu_data[key]["max_temp"] = alert["temp"]
+            gpu_data[key]["count"] += 1
+    
+    # Convert back to list and calculate days
+    aggregated = []
+    for data in gpu_data.values():
+        # Calculate days between first and last date
+        try:
+            from datetime import datetime
+            first_date = datetime.fromisoformat(data["first_date"].replace("Z", "+00:00"))
+            last_date = datetime.fromisoformat(data["last_date"].replace("Z", "+00:00"))
+            days_throttled = (last_date - first_date).days + 1  # +1 to include both start and end dates
+        except:
+            days_throttled = data["count"]
+        
+        aggregated.append({
+            "device": data["device"],
+            "gpu_id": data["gpu_id"],
+            "first_date": data["first_date"],
+            "last_date": data["last_date"],
+            "max_temp": data["max_temp"],
+            "days_throttled": days_throttled
+        })
+    
+    return aggregated
+    """Remove duplicate alerts based on IP, GPU, and data (timestamp)"""
+    seen = set()
+    unique_alerts = []
+    
+    for alert in alerts:
+        # Create a key based on IP (device), GPU, and timestamp
+        # Extract IP from device name (e.g., "device-10.4.1.1" -> "10.4.1.1")
+        ip = alert["device"].replace("device-", "")
+        key = (ip, alert["gpu_id"], alert["timestamp"])
+        
+        if key not in seen:
+            seen.add(key)
+            unique_alerts.append(alert)
+    
+    return unique_alerts
+
+def aggregate_throttled_alerts(alerts):
+    """Aggregate throttled alerts by GPU to show first/last date, temperature, and total days"""
+    gpu_data = {}
+    
+    for alert in alerts:
+        key = (alert["device"], alert["gpu_id"])
+        if key not in gpu_data:
+            gpu_data[key] = {
+                "device": alert["device"],
+                "gpu_id": alert["gpu_id"],
+                "first_date": alert["timestamp"],
+                "last_date": alert["timestamp"],
+                "max_temp": alert["temp"],
+                "count": 1
+            }
+        else:
+            # Update last date, max temp, and increment count
+            if alert["timestamp"] < gpu_data[key]["first_date"]:
+                gpu_data[key]["first_date"] = alert["timestamp"]
+            if alert["timestamp"] > gpu_data[key]["last_date"]:
+                gpu_data[key]["last_date"] = alert["timestamp"]
+            if alert["temp"] > gpu_data[key]["max_temp"]:
+                gpu_data[key]["max_temp"] = alert["temp"]
+            gpu_data[key]["count"] += 1
+    
+    # Convert back to list and calculate days
+    aggregated = []
+    for data in gpu_data.values():
+        # Calculate days between first and last date
+        try:
+            from datetime import datetime
+            first_date = datetime.fromisoformat(data["first_date"].replace("Z", "+00:00"))
+            last_date = datetime.fromisoformat(data["last_date"].replace("Z", "+00:00"))
+            days_throttled = (last_date - first_date).days + 1  # +1 to include both start and end dates
+        except:
+            days_throttled = data["count"]
+        
+        aggregated.append({
+            "device": data["device"],
+            "gpu_id": data["gpu_id"],
+            "first_date": data["first_date"],
+            "last_date": data["last_date"],
+            "max_temp": data["max_temp"],
+            "days_throttled": days_throttled
+        })
+    
+    return aggregated
+
 
 def parse_analysis_output(output, alert_type):
     """Parse the analysis output and filter by alert type"""
@@ -148,13 +276,31 @@ def parse_analysis_output(output, alert_type):
         # Parse thermally failed GPUs
         elif current_section == 'thermally_failed' and line.startswith('•'):
             if alert_type in ['thermally_failed', 'both']:
-                # Parse: "• 2024-08-09T22:30:00 device-10.4.1.1 GPU_21 Temp: 45.2°C (Avg: 32.1°C)"
+                # Parse: "• 2024-08-09T22:30:00 device-10.4.1.1 GPU_21 Temp: 45.2°C (Avg: 32.1°C) - Nearest Cooler: GPU_23 at 35.0°C (diff: 10.2°C)"
                 parts = line.split(' ')
                 if len(parts) >= 6:
                     timestamp = parts[1]
                     device = parts[2]
                     gpu_id = parts[3]
                     temp = parts[5].replace('°C', '')
+                    
+                    # Extract nearest cooler GPU info if available
+                    nearest_cooler_gpu = "N/A"
+                    nearest_cooler_temp = "N/A"
+                    nearest_cooler_diff = "N/A"
+                    
+                    if " - Nearest Cooler: " in line:
+                        cooler_part = line.split(" - Nearest Cooler: ")[1]
+                        if " at " in cooler_part and " (diff: " in cooler_part:
+                            cooler_gpu = cooler_part.split(" at ")[0]
+                            temp_part = cooler_part.split(" at ")[1]
+                            cooler_temp = temp_part.split("°C")[0]
+                            diff_part = temp_part.split(" (diff: ")[1]
+                            cooler_diff = diff_part.split("°C")[0]
+                            
+                            nearest_cooler_gpu = cooler_gpu
+                            nearest_cooler_temp = cooler_temp
+                            nearest_cooler_diff = cooler_diff
                     avg_temp = parts[7].replace('°C', '').replace('(', '').replace(')', '')
                     
                     results['thermally_failed'].append({
@@ -177,6 +323,14 @@ def parse_analysis_output(output, alert_type):
             elif 'Normal:' in line:
                 results['summary']['normal_count'] = line.split(':')[1].strip()
     
+
+    # Apply deduplication to both alert types
+    if alert_type in ["throttled", "both"]:
+        results["throttled"] = aggregate_throttled_alerts(results["throttled"])
+    if alert_type in ["thermally_failed", "both"]:
+        results["thermally_failed"] = deduplicate_alerts(results["thermally_failed"])
+    
+
     return results
 
 @app.route('/api/sites')
@@ -185,4 +339,4 @@ def get_sites():
     return jsonify(SITES)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='192.168.1.247', port=8090, debug=True)
