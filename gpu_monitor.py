@@ -44,9 +44,25 @@ args = parser.parse_args()
 # ----------------------------
 # Time Range Selection
 # ----------------------------
+def parse_date(date_str, default_date="2024-09-01"):
+    """Parse date string in either MM/DD/YYYY or YYYY-MM-DD format"""
+    if not date_str:
+        date_str = default_date
+    
+    # Try MM/DD/YYYY format first (frontend format)
+    try:
+        return datetime.strptime(date_str, "%m/%d/%Y")
+    except ValueError:
+        # Try YYYY-MM-DD format (backend format)
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            # Fallback to default
+            return datetime.strptime(default_date, "%Y-%m-%d")
+
 if args.full:
-    start_time = int(datetime.strptime(args.start_date or "2024-09-01", "%Y-%m-%d").timestamp())
-    end_time = int(datetime.strptime(args.end_date, "%Y-%m-%d").timestamp()) if args.end_date else int(datetime.now().timestamp())
+    start_time = int(parse_date(args.start_date).timestamp())
+    end_time = int(parse_date(args.end_date, datetime.now().strftime("%m/%d/%Y")).timestamp()) if args.end_date else int(datetime.now().timestamp())
 else:
     end_time = int(datetime.now().timestamp())
     start_time = int((datetime.now() - timedelta(days=7)).timestamp())
