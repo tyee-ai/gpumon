@@ -158,7 +158,7 @@ for dev_path in device_paths:
         avg_temp = sum(temps.values()) / len(temps)
         
         for gpu_id, temp in temps.items():
-            if temp > 35:
+            if temp > 85:
                 alert = {
                     "node": node,
                     "timestamp": datetime.fromtimestamp(ts).isoformat(),
@@ -260,8 +260,9 @@ def deduplicate_alerts(alerts_list):
 
 # Deduplicate the alert lists
 if args.full:
-    full_high_temp = deduplicate_alerts(full_high_temp)
-    full_suspicious = deduplicate_alerts(full_suspicious)
+    # When using --full, keep ALL alerts to preserve history for duration calculations
+    # Don't deduplicate - we want to see every throttling event
+    pass
 else:
     alerts = deduplicate_alerts(alerts)
 # ----------------------------

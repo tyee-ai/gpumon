@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPU RRD Monitor - DFW2</title>
+            <title>GPU Thermal Query Tool - DFW2</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -191,11 +191,32 @@
         }
 
         .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: space-between !important;
+            align-items: stretch !important;
+            gap: 16px !important;
             margin-bottom: 32px;
+            width: 100% !important;
+            max-width: 100% !important;
         }
+        
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .summary-cards {
+                gap: 12px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .summary-cards {
+                flex-direction: column !important;
+                gap: 12px !important;
+            }
+        }
+        
+
 
         .summary-card {
             text-align: center;
@@ -203,6 +224,14 @@
             transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            padding: 12px 8px;
+            min-width: 0 !important;
+            flex-shrink: 0 !important;
+            width: 100% !important;
+            max-width: 200px !important;
+            display: block !important;
+            float: none !important;
+            clear: none !important;
         }
 
         .summary-card:hover {
@@ -231,10 +260,16 @@
             background: linear-gradient(90deg, var(--success-color) 0%, #10b981 100%);
         }
 
+        .summary-records::before {
+            background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+
+
         .summary-card .number {
-            font-size: 2.5rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin: 8px 0;
+            margin: 4px 0;
             line-height: 1;
         }
 
@@ -250,17 +285,23 @@
             color: var(--success-color);
         }
 
+        .summary-records .number {
+            color: #3b82f6;
+        }
+
+
+
         .summary-card .label {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.2px;
         }
 
         .summary-card .icon {
-            font-size: 1.5rem;
-            margin-bottom: 16px;
+            font-size: 1rem;
+            margin-bottom: 8px;
             opacity: 0.8;
         }
 
@@ -492,8 +533,8 @@
             }
             
             .summary-cards {
-                grid-template-columns: 1fr;
-                gap: 16px;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 8px !important;
             }
             
             .alert-details {
@@ -527,7 +568,7 @@
         <div class="main-container">
             <!-- Header -->
             <div class="header">
-                <h1><i class="fas fa-microchip icon"></i> GPU RRD Monitor</h1>
+                <h1><i class="fas fa-microchip icon"></i> GPU Thermal Query Tool</h1>
                 <p>DFW2 Data Center GPU Temperature Analysis & Alerting System</p>
             </div>
 
@@ -557,9 +598,9 @@
                             <div class="col-lg-3 col-md-6">
                                 <label for="alert_type" class="form-label">Alert Type</label>
                                 <select class="form-select" id="alert_type" name="alert_type" required>
-                                    <option value="both">Both Types</option>
                                     <option value="throttled">Throttled Only</option>
                                     <option value="thermally_failed">Thermally Failed Only</option>
+                                    <option value="both">Both Types</option>
                                 </select>
                             </div>
                         </div>
@@ -596,14 +637,15 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
+                                        <th>Site</th>
+                                        <th>Cluster</th>
                                         <th>IP Address</th>
                                         <th>GPU ID</th>
                                         <th>Temperature</th>
-                                        <th>First Date</th>
-                                        <th>Last Date</th>
+                                        <th>First Alert</th>
+                                        <th>Last Alert</th>
                                         <th>Days Throttled</th>
-                                        
-                                        <th>Date</th>
+                                        <th>Alert Count</th>
                                     </tr>
                                 </thead>
                                 <tbody id="throttledAlerts">
@@ -622,6 +664,8 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
+                                        <th>Site</th>
+                                        <th>Cluster</th>
                                         <th>IP Address</th>
                                         <th>GPU ID</th>
                                         <th>Temperature</th>
@@ -652,3 +696,4 @@
     <script src="/static/js/dashboard.js"></script>
 </body>
 </html>
+

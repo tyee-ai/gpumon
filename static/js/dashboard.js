@@ -101,39 +101,66 @@ function displaySummaryCards(summary) {
     let html = '';
     
     // Total devices
-    if (summary.total_devices) {
+    if (summary.total_devices && summary.total_devices !== 'N/A') {
         html += `
             <div class="summary-card summary-total">
                 <h4><i class="fas fa-server text-success"></i></h4>
                 <h3>${summary.total_devices}</h3>
-                <p class="text-muted">Total Devices</p>
+                <p class="text-muted">Devices</p>
             </div>
         `;
     }
     
     // Throttled count
-    if (summary.throttled_count) {
+    if (summary.throttled_count !== undefined && summary.throttled_count !== null) {
         html += `
             <div class="summary-card summary-throttled">
                 <h4><i class="fas fa-fire text-danger"></i></h4>
                 <h3>${summary.throttled_count}</h3>
-                <p class="text-muted">Throttled GPUs</p>
+                <p class="text-muted">Throttled</p>
             </div>
         `;
     }
     
     // Suspicious count
-    if (summary.suspicious_count) {
+    if (summary.suspicious_count !== undefined && summary.suspicious_count !== null) {
         html += `
             <div class="summary-card summary-thermally-failed">
                 <h4><i class="fas fa-exclamation-triangle text-warning"></i></h4>
                 <h3>${summary.suspicious_count}</h3>
-                <p class="text-muted">Thermally Failed</p>
+                <p class="text-muted">Failed</p>
+            </div>
+        `;
+    }
+    
+    // Total records processed
+    if (summary.total_records !== undefined && summary.total_records !== null) {
+        html += `
+            <div class="summary-card summary-records">
+                <h4><i class="fas fa-chart-line text-info"></i></h4>
+                <h3>${summary.total_records.toLocaleString()}</h3>
+                <p class="text-muted">Records</p>
             </div>
         `;
     }
     
     summaryCards.innerHTML = html;
+    
+    // Force flexbox layout after rendering
+    summaryCards.style.display = 'flex';
+    summaryCards.style.flexDirection = 'row';
+    summaryCards.style.flexWrap = 'nowrap';
+    summaryCards.style.justifyContent = 'space-between';
+    summaryCards.style.gap = '16px';
+    summaryCards.style.width = '100%';
+    
+    // Force each card to stay in flexbox
+    const cards = summaryCards.querySelectorAll('.summary-card');
+    cards.forEach(card => {
+        card.style.flex = '1 1 0';
+        card.style.minWidth = '0';
+        card.style.maxWidth = 'none';
+    });
 }
 
 function displayThrottledAlerts(alerts) {
@@ -144,7 +171,7 @@ function displayThrottledAlerts(alerts) {
     
     if (!alerts || alerts.length === 0) {
         const row = document.createElement("tr");
-        row.innerHTML = "<td colspan=\"6\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
+        row.innerHTML = "<td colspan=\"9\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
         container.appendChild(row);
         return;
     }
@@ -152,12 +179,15 @@ function displayThrottledAlerts(alerts) {
     alerts.forEach(alert => {
         const row = document.createElement("tr");
         row.innerHTML = `
+            <td><strong>${alert.site || "Unknown"}</strong></td>
+            <td><strong>${alert.cluster || "Unknown"}</strong></td>
             <td><strong>${alert.device}</strong></td>
             <td><strong>${alert.gpu_id}</strong></td>
             <td><strong class=\"text-danger\">${alert.max_temp}°C</strong></td>
             <td>${formatTimestamp(alert.first_date)}</td>
             <td>${formatTimestamp(alert.last_date)}</td>
-            <td><strong class=\"text-danger\">${alert.days_throttled} days</strong></td>
+            <td><strong class="${alert.days_throttled === 1 ? 'text-success' : 'text-danger'}">${alert.days_throttled} day${alert.days_throttled > 1 ? 's' : ''}</strong></td>
+            <td><span class="badge bg-dark">${alert.alert_count || 1}</span></td>
         `;
         container.appendChild(row);
     });
@@ -170,7 +200,7 @@ function displayThermallyFailedAlerts(alerts) {
     
     if (!alerts || alerts.length === 0) {
         const row = document.createElement("tr");
-        row.innerHTML = "<td colspan=\"4\" class=\"text-center text-success\">✅ No thermally failed GPUs found</td>";
+        row.innerHTML = "<td colspan=\"7\" class=\"text-center text-success\">✅ No thermally failed GPUs found</td>";
         container.appendChild(row);
         container.style.display = "none";
         return;
@@ -181,9 +211,12 @@ function displayThermallyFailedAlerts(alerts) {
     alerts.forEach(alert => {
         const row = document.createElement("tr");
         row.innerHTML = `
+            <td><strong>${alert.site || "Unknown"}</strong></td>
+            <td><strong>${alert.cluster || "Unknown"}</strong></td>
             <td><strong>${alert.device}</strong></td>
             <td><strong>${alert.gpu_id}</strong></td>
-        <td><strong class=\"text-warning\">${alert.temp}°C</strong></td>
+            <td><strong class=\"text-warning\">${alert.temp}°C</strong></td>
+            <td>${alert.avg_temp ? alert.avg_temp + '°C' : 'N/A'}</td>
             <td>${formatTimestamp(alert.timestamp)}</td>
         `;
         container.appendChild(row);
