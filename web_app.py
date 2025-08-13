@@ -41,6 +41,7 @@ def sort_alerts_by_date_and_cluster(alerts):
 
 import os
 import ipaddress
+import re
 
 app = Flask(__name__)
 
@@ -470,4 +471,9 @@ def get_sites():
     return jsonify(SITES)
 
 if __name__ == '__main__':
-    app.run(host='192.168.1.247', port=8090, debug=True)
+    # Get host and port from environment variables or use defaults
+    host = os.environ.get('FLASK_HOST', '0.0.0.0')
+    port = int(os.environ.get('FLASK_PORT', 8090))
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    
+    app.run(host=host, port=port, debug=debug)

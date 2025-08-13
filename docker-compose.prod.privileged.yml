@@ -6,10 +6,12 @@ services:
       dockerfile: Dockerfile.prod.privileged
     container_name: gpumon-app-prod-privileged
     ports:
-      - "8090:5000"
+      - "8090:8090"
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=8090
       - RRD_DATA_PATH=/app/data
     volumes:
       # Mount Observium RRD data directory with privileged access
@@ -23,7 +25,7 @@ services:
     cap_add:
       - ALL  # Add all capabilities
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/"]
       interval: 30s
       timeout: 10s
       retries: 3

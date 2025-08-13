@@ -22,11 +22,11 @@ COPY . .
 # Note: Running as root to access RRD files that require elevated permissions
 
 # Expose port
-EXPOSE 5000
+EXPOSE 8090
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/ || exit 1
+    CMD curl -f http://localhost:8090/ || exit 1
 
 # Run the application
 CMD ["python3", "web_app.py"]

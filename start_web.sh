@@ -1,4 +1,5 @@
 #!/bin/bash
+export RRD_DATA_PATH="/opt/docker/volumes/docker-observium_config/_data/rrd"
 
 echo "🌐 Starting GPU RRD Monitor Web Interface"
 echo "========================================"
