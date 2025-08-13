@@ -1,12 +1,11 @@
-
 services:
   gpumon:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: gpumon-app-test
+    container_name: gpumon-app-test2
     ports:
-      - "8090:8090"
+      - "8091:8090"
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1

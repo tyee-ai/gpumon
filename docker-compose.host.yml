@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  gpumon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gpumon-app-host
+    network_mode: host
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=8092
+      - RRD_DATA_PATH=/host-rrd-data
+    volumes:
+      # Bind mount the production RRD data directory
+      - /opt/docker/volumes/docker-observium_config/_data/rrd:/host-rrd-data:ro
+      # Mount logs directory
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8092/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

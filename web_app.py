@@ -91,9 +91,15 @@ def run_analysis():
         site_id = site_config['subnet'].split('.')[1]  # Extract "4" from "10.4"
         
         # Build command for gpu_monitor.py
+        # Use production RRD path directly for reliable access
+        rrd_base_path = "/opt/docker/volumes/docker-observium_config/_data/rrd"
+        if not os.path.exists(rrd_base_path):
+            # Fallback to environment variable if production path doesn't exist
+            rrd_base_path = os.environ.get("RRD_DATA_PATH", "/app/data")
+        
         cmd = [
             'python3', 'gpu_monitor.py',
-            "--base-path", os.environ.get("RRD_DATA_PATH", "/app/data"),
+            "--base-path", rrd_base_path,
             '--site', site_id,
             '--full',
             '--start-date', start_date,
