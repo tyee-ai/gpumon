@@ -4,7 +4,7 @@ GPU RRD Monitor Web Frontend
 Provides web interface for GPU temperature analysis
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 import subprocess
 import json
 from datetime import datetime, timedelta
@@ -66,7 +66,11 @@ DEFAULT_SITE = "DFW2"
 @app.route('/')
 def home():
     """Home page with cluster status dashboard"""
-    return render_template('home.html')
+    response = make_response(render_template('home.html'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/query')
 def index():
@@ -75,11 +79,24 @@ def index():
     end_date = datetime.now().strftime('%Y-%m-%d')
     start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
     
-    return render_template('index.html', 
+    response = make_response(render_template('index.html', 
                          sites=SITES, 
                          default_site=DEFAULT_SITE,
                          start_date=start_date,
-                         end_date=end_date)
+                         end_date=end_date))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/analytics')
+def analytics():
+    """Analytics page with GPU throttling breakdown"""
+    response = make_response(render_template('analytics.html'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/api/analysis', methods=['GET'])
 def run_analysis():
