@@ -398,6 +398,177 @@
         .alert-thermally-failed::before {
             background: var(--warning-color);
         }
+        
+        /* Table styling for proper column alignment */
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+        
+        .table th,
+        .table td {
+            vertical-align: middle;
+            text-align: left;
+            padding: 12px 8px;
+        }
+        
+        /* Ensure table displays properly */
+        .table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+        
+        .table th,
+        .table td {
+            border: 1px solid #dee2e6 !important;
+            padding: 8px !important;
+            text-align: left !important;
+            vertical-align: middle !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* Force table to respect column structure */
+        .table-responsive table {
+            min-width: 100% !important;
+        }
+        
+        /* Ensure each column has proper width - use !important to override any conflicts */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 8% !important; min-width: 60px !important; }
+        .table th:nth-child(2), .table td:nth-child(2) { width: 8% !important; min-width: 60px !important; }
+        .table th:nth-child(3), .table td:nth-child(3) { width: 15% !important; min-width: 120px !important; }
+        .table th:nth-child(4), .table td:nth-child(4) { width: 10% !important; min-width: 80px !important; }
+        .table th:nth-child(5), .table td:nth-child(5) { width: 12% !important; min-width: 100px !important; }
+        .table th:nth-child(6), .table td:nth-child(6) { width: 15% !important; min-width: 120px !important; }
+        .table th:nth-child(7), .table td:nth-child(7) { width: 15% !important; min-width: 120px !important; }
+        .table th:nth-child(8), .table td:nth-child(8) { width: 12% !important; min-width: 100px !important; }
+        .table th:nth-child(9), .table td:nth-child(9) { width: 10% !important; min-width: 80px !important; }
+        
+        /* Override any Bootstrap table styles that might interfere */
+        .table.table-striped {
+            table-layout: fixed !important;
+        }
+        
+        /* Ensure the thermally failed table specifically has proper alignment */
+        #thermallyFailedSection .table {
+            table-layout: fixed !important;
+            border-spacing: 0 !important;
+        }
+        
+        #thermallyFailedSection .table th,
+        #thermallyFailedSection .table td {
+            width: auto !important;
+            display: table-cell !important;
+            float: none !important;
+        }
+        
+        /* Force exact column alignment */
+        #thermallyFailedSection .table th:nth-child(1),
+        #thermallyFailedSection .table td:nth-child(1) { 
+            width: 8% !important; 
+            min-width: 60px !important; 
+            max-width: 60px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(2),
+        #thermallyFailedSection .table td:nth-child(2) { 
+            width: 8% !important; 
+            min-width: 60px !important; 
+            max-width: 60px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(3),
+        #thermallyFailedSection .table td:nth-child(3) { 
+            width: 15% !important; 
+            min-width: 120px !important; 
+            max-width: 120px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(4),
+        #thermallyFailedSection .table td:nth-child(4) { 
+            width: 10% !important; 
+            min-width: 80px !important; 
+            max-width: 80px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(5),
+        #thermallyFailedSection .table td:nth-child(5) { 
+            width: 12% !important; 
+            min-width: 100px !important; 
+            max-width: 100px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(6),
+        #thermallyFailedSection .table td:nth-child(6) { 
+            width: 15% !important; 
+            min-width: 120px !important; 
+            max-width: 120px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(7),
+        #thermallyFailedSection .table td:nth-child(7) { 
+            width: 15% !important; 
+            min-width: 120px !important; 
+            max-width: 120px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(8),
+        #thermallyFailedSection .table td:nth-child(8) { 
+            width: 12% !important; 
+            min-width: 100px !important; 
+            max-width: 100px !important;
+        }
+        
+        #thermallyFailedSection .table th:nth-child(9),
+        #thermallyFailedSection .table td:nth-child(9) { 
+            width: 10% !important; 
+            min-width: 80px !important; 
+            max-width: 80px !important;
+        }
+        
+        /* Custom table styling for thermally failed alerts */
+        .custom-table-container {
+            width: 100%;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .custom-table-header {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .custom-table-row {
+            display: flex;
+            width: 100%;
+        }
+        
+        .custom-table-cell {
+            padding: 12px 8px;
+            border-right: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        
+        .custom-table-cell:last-child {
+            border-right: none;
+        }
+        
+        .header-cell {
+            font-weight: 600;
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        
+        .custom-table-body .custom-table-row:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .custom-table-body .custom-table-row:hover {
+            background-color: #e9ecef;
+        }
 
         .alert-header {
             display: flex;
@@ -461,32 +632,7 @@
             color: var(--warning-color);
         }
 
-        .raw-output-section {
-            background: var(--light-bg);
-            margin-top: 32px;
-        }
 
-        .raw-output-section h4 {
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .raw-output-section h4 .icon {
-            color: var(--secondary-color);
-        }
-
-        .raw-output-section pre {
-            font-size: 0.85rem;
-            line-height: 1.5;
-            overflow-x: auto;
-            color: var(--text-primary);
-            margin: 0;
-        }
 
         .no-alerts {
             text-align: center;
@@ -660,33 +806,26 @@
                             <i class="fas fa-exclamation-triangle icon" style="color: var(--warning-color);"></i>
                             Thermally Failed GPUs
                         </h3>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Site</th>
-                                        <th>Cluster</th>
-                                        <th>IP Address</th>
-                                        <th>GPU ID</th>
-                                        <th>Temperature</th>
-                                        <th>Average</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="thermallyFailedAlerts">
-                                </tbody>
-                            </table>
+                        <div class="custom-table-container">
+                            <div class="custom-table-header">
+                                <div class="custom-table-row">
+                                    <div class="custom-table-cell header-cell" style="width: 8%;">Site</div>
+                                    <div class="custom-table-cell header-cell" style="width: 8%;">Cluster</div>
+                                    <div class="custom-table-cell header-cell" style="width: 15%;">IP Address</div>
+                                    <div class="custom-table-cell header-cell" style="width: 10%;">GPU ID</div>
+                                    <div class="custom-table-cell header-cell" style="width: 12%;">Temperature</div>
+                                    <div class="custom-table-cell header-cell" style="width: 15%;">First Alert</div>
+                                    <div class="custom-table-cell header-cell" style="width: 15%;">Last Alert</div>
+                                    <div class="custom-table-cell header-cell" style="width: 12%;">Days Failed</div>
+                                    <div class="custom-table-cell header-cell" style="width: 10%;">Alert Count</div>
+                                </div>
+                            </div>
+                            <div class="custom-table-body" id="thermallyFailedAlerts">
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Raw Output -->
-                    <div class="raw-output-section">
-                        <h4>
-                            <i class="fas fa-terminal icon"></i>
-                            Raw Analysis Output
-                        </h4>
-                        <pre id="rawOutput"></pre>
-                    </div>
+                    
                 </div>
             </div>
         </div>

@@ -74,8 +74,6 @@ function displayResults(data) {
     const summaryCards = document.getElementById('summaryCards');
     const throttledSection = document.getElementById('throttledSection');
     const thermallyFailedSection = document.getElementById('thermallyFailedSection');
-    const rawOutput = document.getElementById('rawOutput');
-    
     // Display summary cards
     displaySummaryCards(data.results.summary);
     
@@ -84,9 +82,6 @@ function displayResults(data) {
     
     // Display thermally failed alerts
     displayThermallyFailedAlerts(data.results.thermally_failed);
-    
-    // Display raw output
-    rawOutput.textContent = data.raw_output;
     
     // Show results section
     resultsSection.style.display = 'block';
@@ -198,29 +193,87 @@ function displayThermallyFailedAlerts(alerts) {
     // Clear existing content
     container.innerHTML = "";
     
+    console.log("displayThermallyFailedAlerts called with:", alerts);
+    
     if (!alerts || alerts.length === 0) {
-        const row = document.createElement("tr");
-        row.innerHTML = "<td colspan=\"7\" class=\"text-center text-success\">✅ No thermally failed GPUs found</td>";
-        container.appendChild(row);
+        const noDataRow = document.createElement("div");
+        noDataRow.className = "custom-table-row";
+        noDataRow.innerHTML = '<div class="custom-table-cell" style="width: 100%; text-align: center; color: #28a745;">✅ No thermally failed GPUs found</div>';
+        container.appendChild(noDataRow);
         container.style.display = "none";
         return;
     }
     
     container.style.display = "block";
     
-    alerts.forEach(alert => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td><strong>${alert.site || "Unknown"}</strong></td>
-            <td><strong>${alert.cluster || "Unknown"}</strong></td>
-            <td><strong>${alert.device}</strong></td>
-            <td><strong>${alert.gpu_id}</strong></td>
-            <td><strong class=\"text-warning\">${alert.temp}°C</strong></td>
-            <td>${alert.avg_temp ? alert.avg_temp + '°C' : 'N/A'}</td>
-            <td>${formatTimestamp(alert.timestamp)}</td>
-        `;
+    alerts.forEach((alert, index) => {
+        console.log(`Processing alert ${index}:`, alert);
+        
+        const row = document.createElement("div");
+        row.className = "custom-table-row";
+        
+        // Create each cell individually to ensure proper structure
+        const siteCell = document.createElement("div");
+        siteCell.className = "custom-table-cell";
+        siteCell.style.width = "8%";
+        siteCell.innerHTML = `<strong>${alert.site || "Unknown"}</strong>`;
+        
+        const clusterCell = document.createElement("div");
+        clusterCell.className = "custom-table-cell";
+        clusterCell.style.width = "8%";
+        clusterCell.innerHTML = `<strong>${alert.cluster || "Unknown"}</strong>`;
+        
+        const deviceCell = document.createElement("div");
+        deviceCell.className = "custom-table-cell";
+        deviceCell.style.width = "15%";
+        deviceCell.innerHTML = `<strong>${alert.device}</strong>`;
+        
+        const gpuCell = document.createElement("div");
+        gpuCell.className = "custom-table-cell";
+        gpuCell.style.width = "10%";
+        gpuCell.innerHTML = `<strong>${alert.gpu_id}</strong>`;
+        
+        const tempCell = document.createElement("div");
+        tempCell.className = "custom-table-cell";
+        tempCell.style.width = "12%";
+        tempCell.innerHTML = `<strong class="text-warning">${alert.max_temp}°C</strong>`;
+        
+        const firstDateCell = document.createElement("div");
+        firstDateCell.className = "custom-table-cell";
+        firstDateCell.style.width = "15%";
+        firstDateCell.innerHTML = formatTimestamp(alert.first_date);
+        
+        const lastDateCell = document.createElement("div");
+        lastDateCell.className = "custom-table-cell";
+        lastDateCell.style.width = "15%";
+        lastDateCell.innerHTML = formatTimestamp(alert.last_date);
+        
+        const daysCell = document.createElement("div");
+        daysCell.className = "custom-table-cell";
+        daysCell.style.width = "12%";
+        daysCell.innerHTML = `<strong class="${alert.days_failed === 1 ? 'text-success' : 'text-danger'}">${alert.days_failed} day${alert.days_failed > 1 ? 's' : ''}</strong>`;
+        
+        const countCell = document.createElement("div");
+        countCell.className = "custom-table-cell";
+        countCell.style.width = "10%";
+        countCell.innerHTML = `<span class="badge bg-dark">${alert.alert_count || 1}</span>`;
+        
+        // Append all cells to the row
+        row.appendChild(siteCell);
+        row.appendChild(clusterCell);
+        row.appendChild(deviceCell);
+        row.appendChild(gpuCell);
+        row.appendChild(tempCell);
+        row.appendChild(firstDateCell);
+        row.appendChild(lastDateCell);
+        row.appendChild(daysCell);
+        row.appendChild(countCell);
+        
+        console.log(`Row ${index} created with ${row.children.length} cells`);
         container.appendChild(row);
     });
+    
+    console.log("Final table HTML:", container.innerHTML);
 }
 function formatTimestamp(timestamp) {
     try {

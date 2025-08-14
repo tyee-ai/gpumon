@@ -14,11 +14,18 @@ def get_site_and_cluster(ip_address):
         ip_obj = ipaddress.ip_address(ip_address)
         # Handle 10.4.x.x range
         if str(ip_obj).startswith("10.4."):
-            # Extract cluster from third octet
+            # Extract cluster from third octet and map to C1/C2
             octets = str(ip_obj).split('.')
             if len(octets) >= 3:
-                cluster_num = octets[2]
-                return "DFW2", f"C{cluster_num}"
+                third_octet = octets[2]
+                # Map 11.x.x to C1, 21.x.x to C2
+                if third_octet == "11":
+                    cluster = "C1"
+                elif third_octet == "21":
+                    cluster = "C2"
+                else:
+                    cluster = f"C{third_octet}"  # Fallback for other octets
+                return "DFW2", cluster
             else:
                 return "DFW2", "Unknown"
         else:
@@ -134,7 +141,6 @@ def run_analysis():
         return jsonify({
             'success': True,
             'results': results,
-            'raw_output': output,
             'site': site,
             'start_date': start_date,
             'end_date': end_date,
@@ -328,28 +334,82 @@ def deduplicate_alerts(alerts):
             unique_alerts.append(alert)
     
     return unique_alerts
+
+
+def format_thermally_failed_alerts(alerts):
+    """Aggregate thermally failed alerts by IP+GPU combination"""
+    if not alerts:
+        return []
+    
+    # Group alerts by device (IP) and GPU ID
+    gpu_data = {}
+    
+    for alert in alerts:
+        key = (alert["device"], alert["gpu_id"])
+        
+        if key not in gpu_data:
+            gpu_data[key] = {
+                "device": alert["device"],
+                "site": alert["site"],
+                "cluster": alert["cluster"],
+                "gpu_id": alert["gpu_id"],
+                "first_alert": alert["timestamp"],
+                "last_alert": alert["timestamp"],
+                "max_temp": alert["temp"],
+                "alert_count": 1
+            }
+        else:
+            # Update existing entry
+            gpu_data[key]["alert_count"] += 1
+            
+            # Update first alert if this is earlier
+            if alert["timestamp"] < gpu_data[key]["first_alert"]:
+                gpu_data[key]["first_alert"] = alert["timestamp"]
+            
+            # Update last alert if this is later
+            if alert["timestamp"] > gpu_data[key]["last_alert"]:
+                gpu_data[key]["last_alert"] = alert["timestamp"]
+            
+            # Update max temperature if this is higher
+            if alert["temp"] > gpu_data[key]["max_temp"]:
+                gpu_data[key]["max_temp"] = alert["temp"]
+    
+    # Convert to list format with accurate duration calculations
+    formatted = []
     for data in gpu_data.values():
-        # Calculate days between first and last date
+        # Calculate actual days between first and last alert
         try:
             from datetime import datetime
-            first_date = datetime.fromisoformat(data["first_date"].replace("Z", "+00:00"))
-            last_date = datetime.fromisoformat(data["last_date"].replace("Z", "+00:00"))
-            days_throttled = (last_date - first_date).days + 1  # +1 to include both start and end dates
-        except:
-            days_throttled = data["count"]
+            first_date = datetime.fromisoformat(data["first_alert"].replace("Z", "+00:00"))
+            last_date = datetime.fromisoformat(data["last_alert"].replace("Z", "+00:00"))
+            days_failed = (last_date - first_date).days + 1  # +1 to include both start and end dates
+            
+            # Debug output for multi-day alerts
+            if days_failed > 1:
+                print(f"Debug: Multi-day thermally failed alert detected for {data['device']} {data['gpu_id']}")
+                print(f"  First alert: {data['first_alert']}")
+                print(f"  Last alert: {data['last_alert']}")
+                print(f"  Days failed: {days_failed}")
+                print(f"  Total alerts: {data['alert_count']}")
+                
+        except Exception as e:
+            print(f"Warning: Could not parse dates for {data['device']} {data['gpu_id']}: {e}")
+            days_failed = 1  # Fallback to 1 day
         
-        aggregated.append({
+        formatted.append({
             "device": data["device"],
             "site": data["site"],
             "cluster": data["cluster"],
             "gpu_id": data["gpu_id"],
-            "first_date": data["first_date"],
-            "last_date": data["last_date"],
-            "max_temp": data["max_temp"],
-            "days_throttled": days_throttled
+            "first_date": data["first_alert"],      # First time this GPU failed
+            "last_date": data["last_alert"],        # Last time this GPU failed
+            "max_temp": data["max_temp"],           # Highest temperature seen
+            "days_failed": days_failed,             # Actual calculated duration
+            "alert_count": data["alert_count"],     # Total number of alerts for this GPU
+            "note": f"Failed for {days_failed} day{'s' if days_failed > 1 else ''}"
         })
     
-    return aggregated
+    return formatted
 
 
 def parse_analysis_output(output, alert_type):
@@ -438,7 +498,8 @@ def parse_analysis_output(output, alert_type):
         # Since gpu_monitor.py already deduplicates to show latest, we just need to format the data
         results["throttled"] = format_throttled_alerts(results["throttled"])
     if alert_type in ["thermally_failed", "both"]:
-        results["thermally_failed"] = deduplicate_alerts(results["thermally_failed"])
+        # For thermally failed alerts, aggregate by IP+GPU combination
+        results["thermally_failed"] = format_thermally_failed_alerts(results["thermally_failed"])
     
     # Generate summary from the actual data
     print(f"Debug: Summary generation - throttled: {len(results['throttled'])}, thermally_failed: {len(results['thermally_failed'])}")

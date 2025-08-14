@@ -15,11 +15,11 @@ echo ""
 
 # Stop any existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose down
+docker compose down
 
 # Build and start the application
 echo "🔨 Building and starting GPU Monitor..."
-docker-compose up --build -d
+docker compose up --build -d
 
 echo ""
 echo "🎉 GPU Monitor is starting up in Docker!"
@@ -34,10 +34,10 @@ echo "  • Real-time GPU analysis with accurate duration calculations"
 echo "  • Color-coded results display"
 echo ""
 echo "🛑 To stop the application:"
-echo "   docker-compose down"
+echo "   docker compose down"
 echo ""
 echo "📝 To view logs:"
-echo "   docker-compose logs -f gpumon"
+echo "   docker compose logs -f gpumon"
 echo ""
 echo "🔍 To check container status:"
-echo "   docker-compose ps"
+echo "   docker compose ps"
