@@ -131,6 +131,65 @@
             font-size: 0.9rem;
             margin-top: 2rem;
         }
+
+        /* Real-time Clock and Timer */
+        .time-display {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .current-time {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-date {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+        }
+
+        .poll-timer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .timer-item {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            min-width: 120px;
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 0.25rem;
+        }
+
+        .timer-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .next-poll {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
         
         .nav-link {
             color: #3498db;
@@ -261,6 +320,23 @@
         </div>
 
     <div class="container">
+        <!-- Real-time Clock and Poll Timer -->
+        <div class="time-display">
+            <div class="current-time" id="currentTime">--:--:--</div>
+            <div class="current-date" id="currentDate">--</div>
+            <div class="poll-timer">
+                <div class="timer-item">
+                    <div class="timer-label">Minutes</div>
+                    <div class="timer-value" id="minutesLeft">--</div>
+                </div>
+                <div class="timer-item">
+                    <div class="timer-label">Seconds</div>
+                    <div class="timer-value" id="secondsLeft">--</div>
+                </div>
+                <div class="next-poll" id="nextPollTime">Next poll: --</div>
+            </div>
+        </div>
+
         <div class="row" id="clusterStatus">
             <!-- Cluster status boxes will be dynamically populated here -->
         </div>
@@ -325,6 +401,16 @@
             
             // Update timestamp
             updateTimestamp();
+            
+            // Start real-time clock updates (every second)
+            setInterval(updateClock, 1000);
+            
+            // Start countdown timer updates (every second)
+            setInterval(updateCountdown, 1000);
+            
+            // Initial updates
+            updateClock();
+            updateCountdown();
         }
         
         // Check all clusters for throttling
@@ -444,6 +530,58 @@
         function updateTimestamp() {
             const now = new Date();
             document.getElementById('lastUpdated').textContent = `Last updated: ${now.toLocaleString()}`;
+        }
+
+        // Update real-time clock
+        function updateClock() {
+            const now = new Date();
+            
+            // Update current time (HH:MM:SS)
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+            
+            // Update current date
+            const dateString = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('currentDate').textContent = dateString;
+        }
+
+        // Update countdown timer
+        function updateCountdown() {
+            const now = new Date();
+            const lastPoll = clusterStatus['C1']?.lastCheck || now;
+            const nextPoll = new Date(lastPoll.getTime() + QUERY_INTERVAL);
+            const timeLeft = nextPoll.getTime() - now.getTime();
+            
+            if (timeLeft > 0) {
+                const minutes = Math.floor(timeLeft / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                document.getElementById('minutesLeft').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('secondsLeft').textContent = seconds.toString().padStart(2, '0');
+                
+                // Update next poll time
+                const nextPollString = nextPoll.toLocaleTimeString('en-US', {
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('nextPollTime').textContent = `Next poll: ${nextPollString}`;
+            } else {
+                // Poll is due
+                document.getElementById('minutesLeft').textContent = '00';
+                document.getElementById('secondsLeft').textContent = '00';
+                document.getElementById('nextPollTime').textContent = 'Polling now...';
+            }
         }
         
         // Format date for API
