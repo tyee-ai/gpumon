@@ -64,6 +64,11 @@ SITES = {
 DEFAULT_SITE = "DFW2"
 
 @app.route('/')
+def home():
+    """Home page with cluster status dashboard"""
+    return render_template('home.html')
+
+@app.route('/query')
 def index():
     """Main dashboard page"""
     # Set default dates (last 7 days)
