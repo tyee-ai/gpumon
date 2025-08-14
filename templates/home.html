@@ -160,36 +160,16 @@
             justify-content: center;
             align-items: center;
             gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .timer-item {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            min-width: 120px;
-        }
-
-        .timer-label {
-            font-size: 0.8rem;
-            opacity: 0.9;
-            margin-bottom: 0.25rem;
-        }
-
-        .timer-value {
-            font-size: 1.2rem;
-            font-weight: 600;
         }
 
         .next-poll {
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
             color: white;
-            padding: 0.75rem 1.5rem;
+            padding: 1rem 2rem;
             border-radius: 10px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            min-width: 80px;
+            min-width: 120px;
             text-align: center;
         }
         
@@ -327,14 +307,6 @@
             <div class="current-time" id="currentTime">--:--:--</div>
             <div class="current-date" id="currentDate">--</div>
             <div class="poll-timer">
-                <div class="timer-item">
-                    <div class="timer-label">Minutes</div>
-                    <div class="timer-value" id="minutesLeft">--</div>
-                </div>
-                <div class="timer-item">
-                    <div class="timer-label">Seconds</div>
-                    <div class="timer-value" id="secondsLeft">--</div>
-                </div>
                 <div class="next-poll" id="nextPollTime">--</div>
             </div>
         </div>
@@ -556,7 +528,7 @@
             document.getElementById('currentDate').textContent = dateString;
         }
 
-        // Update countdown timer
+        // Update next poll time
         function updateCountdown() {
             const now = new Date();
             const lastPoll = clusterStatus['C1']?.lastCheck || now;
@@ -564,12 +536,6 @@
             const timeLeft = nextPoll.getTime() - now.getTime();
             
             if (timeLeft > 0) {
-                const minutes = Math.floor(timeLeft / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                
-                document.getElementById('minutesLeft').textContent = minutes.toString().padStart(2, '0');
-                document.getElementById('secondsLeft').textContent = seconds.toString().padStart(2, '0');
-                
                 // Update next poll time
                 const nextPollString = nextPoll.toLocaleTimeString('en-US', {
                     hour12: false,
@@ -579,8 +545,6 @@
                 document.getElementById('nextPollTime').textContent = nextPollString;
             } else {
                 // Poll is due
-                document.getElementById('minutesLeft').textContent = '00';
-                document.getElementById('secondsLeft').textContent = '00';
                 document.getElementById('nextPollTime').textContent = 'Now';
             }
         }
