@@ -187,8 +187,10 @@
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
         }
         
         .nav-link {
@@ -333,7 +335,7 @@
                     <div class="timer-label">Seconds</div>
                     <div class="timer-value" id="secondsLeft">--</div>
                 </div>
-                <div class="next-poll" id="nextPollTime">Next poll: --</div>
+                <div class="next-poll" id="nextPollTime">--</div>
             </div>
         </div>
 
@@ -536,12 +538,11 @@
         function updateClock() {
             const now = new Date();
             
-            // Update current time (HH:MM:SS)
+            // Update current time (HH:MM only)
             const timeString = now.toLocaleTimeString('en-US', { 
                 hour12: false,
                 hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
+                minute: '2-digit'
             });
             document.getElementById('currentTime').textContent = timeString;
             
@@ -575,12 +576,12 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-                document.getElementById('nextPollTime').textContent = `Next poll: ${nextPollString}`;
+                document.getElementById('nextPollTime').textContent = nextPollString;
             } else {
                 // Poll is due
                 document.getElementById('minutesLeft').textContent = '00';
                 document.getElementById('secondsLeft').textContent = '00';
-                document.getElementById('nextPollTime').textContent = 'Polling now...';
+                document.getElementById('nextPollTime').textContent = 'Now';
             }
         }
         
