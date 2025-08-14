@@ -296,7 +296,7 @@
         <div class="time-display">
                         <div class="current-time" id="currentTime">--:--:--</div>
             <div class="current-date" id="currentDate">--</div>
-            <div class="last-poll-time" id="lastPollTime">Last poll: --</div>
+            <div class="last-poll-time" id="lastPollTime">Last poll: Never</div>
         </div>
 
         <div class="row" id="clusterStatus">
@@ -313,8 +313,11 @@
     <script>
         // Configuration
         const CLUSTERS = ['C1', 'C2']; // Add more clusters as needed
-        const QUERY_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
+        const QUERY_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
         const BLINK_DURATION = 10000; // 10 seconds in milliseconds
+        
+        // Note: Initial check runs immediately on page load, then every 15 minutes
+        // "Last poll" updates after each check (initial + scheduled)
         
         // State management
         let clusterStatus = {};
@@ -355,10 +358,10 @@
         
         // Start the monitoring loop
         function startMonitoring() {
-            // Initial check
-            checkAllClusters();
+            // Initial check runs immediately on page load (but doesn't start "Last poll" clock)
+            checkAllClustersInitial();
             
-            // Set up periodic checks
+            // Set up periodic checks every 15 minutes (these WILL update "Last poll")
             setInterval(checkAllClusters, QUERY_INTERVAL);
             
             // Update timestamp
@@ -369,10 +372,18 @@
             
             // Initial updates
             updateClock();
-            updateLastPollTime();
+            // "Last poll" clock only starts after first scheduled 15-minute interval
         }
         
-        // Check all clusters for throttling
+        // Initial check for dashboard population (doesn't start "Last poll" clock)
+        async function checkAllClustersInitial() {
+            const promises = CLUSTERS.map(cluster => checkCluster(cluster));
+            await Promise.all(promises);
+            updateTimestamp();
+            // Don't update last poll time - wait for first scheduled interval
+        }
+        
+        // Check all clusters for throttling (updates "Last poll" clock)
         async function checkAllClusters() {
             const promises = CLUSTERS.map(cluster => checkCluster(cluster));
             await Promise.all(promises);
