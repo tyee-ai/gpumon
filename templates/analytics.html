@@ -245,13 +245,35 @@
                     <span class="summary-stat-label">Total Throttled GPUs</span>
                 </div>
                 <div class="summary-stat">
-                    <span class="summary-stat-value" id="totalDevices">0</span>
-                    <span class="summary-stat-label">Total Devices</span>
+                    <span class="summary-stat-value" id="totalDevices">254</span>
+                    <span class="summary-stat-label">Total GPU Nodes</span>
+                </div>
+                <div class="summary-stat">
+                    <span class="summary-stat-value" id="totalGPUs">2032</span>
+                    <span class="summary-stat-label">Total GPUs</span>
                 </div>
                 <div class="summary-stat">
                     <span class="summary-stat-value" id="throttleRate">0%</span>
                     <span class="summary-stat-label">Throttle Rate</span>
                 </div>
+            </div>
+            
+            <!-- GPU Infrastructure Summary -->
+            <div class="summary-stats" style="margin-top: 1rem;">
+                <div class="summary-stat">
+                    <span class="summary-stat-value" style="color: #10b981;">254</span>
+                    <span class="summary-stat-label">Planned GPU Nodes</span>
+                </div>
+                <div class="summary-stat">
+                    <span class="summary-stat-value" style="color: #3b82f6;">2032</span>
+                    <span class="summary-stat-label">Planned Total GPUs</span>
+                </div>
+            </div>
+            
+            <!-- Note about device counting -->
+            <div class="alert alert-info text-center" style="margin-bottom: 2rem;">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Note:</strong> Both the Query Tool and Analytics page show consistent GPU infrastructure: 254 GPU nodes with 8 GPUs each = 2032 total GPUs. The throttle rate is calculated as (Total Throttled GPUs / Total GPUs) × 100, showing what percentage of your GPU infrastructure experienced thermal throttling.
             </div>
 
             <!-- GPU Status Grid -->
@@ -343,8 +365,30 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // GPU IDs in order (top row left to right, then bottom row left to right)
-        const GPU_IDS = ['24', '23', '22', '21', '28', '27', '26', '25'];
+        // GPU IDs with cluster and subnet information for more accurate analysis
+        const GPU_CONFIG = {
+            '24': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 24 - Cluster 1', gpu_count: 8 },
+            '23': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 23 - Cluster 1', gpu_count: 8 },
+            '22': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 22 - Cluster 1', gpu_count: 8 },
+            '21': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 21 - Cluster 1', gpu_count: 8 },
+            '28': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 28 - Cluster 2', gpu_count: 8 },
+            '27': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 27 - Cluster 2', gpu_count: 8 },
+            '26': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 26 - Cluster 2', gpu_count: 8 },
+            '25': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 25 - Cluster 2', gpu_count: 8 }
+        };
+        
+        // Site configuration constants
+        const SITE_CONFIG = {
+            total_gpu_nodes: 254,
+            total_gpus: 2032,
+            gpus_per_node: 8,
+            clusters: {
+                'C1': { gpu_node_count: 127, total_gpus: 1016 },
+                'C2': { gpu_node_count: 127, total_gpus: 1016 }
+            }
+        };
+        
+        const GPU_IDS = Object.keys(GPU_CONFIG);
         
         // Initialize analytics dashboard
         function initializeAnalytics() {
@@ -354,6 +398,10 @@
             
             document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
             document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+            
+            // Always ensure infrastructure values are displayed correctly
+            document.getElementById('totalDevices').textContent = SITE_CONFIG.total_gpu_nodes;
+            document.getElementById('totalGPUs').textContent = SITE_CONFIG.total_gpus;
             
             // Load initial data
             loadAnalyticsData();
@@ -402,49 +450,77 @@
             console.log('Throttled alerts:', throttledAlerts);
             console.log('Thermally failed alerts:', thermallyFailedAlerts);
             
-            // Combine all alerts
-            const allAlerts = [...throttledAlerts, ...thermallyFailedAlerts];
+            // Create a map to track unique throttling events by IP + GPU_ID combination
+            const uniqueThrottleEvents = new Map();
             
-            // Count by GPU ID (extract number from GPU_21, GPU_22, etc.)
+            // Process throttled alerts for unique events
+            throttledAlerts.forEach(alert => {
+                if (alert.ip && alert.gpu_id) {
+                    // Create unique key: IP + GPU_ID
+                    const uniqueKey = `${alert.ip}_${alert.gpu_id}`;
+                    if (!uniqueThrottleEvents.has(uniqueKey)) {
+                        uniqueThrottleEvents.set(uniqueKey, alert);
+                    }
+                }
+            });
+            
+            // Count unique throttled GPUs by GPU ID
             const gpuCounts = {};
-            let totalThrottled = 0;
+            GPU_IDS.forEach(id => gpuCounts[id] = 0);
             
-            allAlerts.forEach(alert => {
+            // Count unique events for each GPU ID
+            // This counts how many unique IP+GPU_ID combinations had throttling events
+            uniqueThrottleEvents.forEach((alert, uniqueKey) => {
                 // Extract the number part from GPU_21 -> 21, GPU_22 -> 22, etc.
                 let gpuId = alert.gpu_id;
                 if (gpuId && gpuId.startsWith('GPU_')) {
                     gpuId = gpuId.substring(4); // Remove "GPU_" prefix
                 }
                 
-                if (!gpuCounts[gpuId]) {
-                    gpuCounts[gpuId] = 0;
-                }
-                gpuCounts[gpuId]++;
-                totalThrottled++;
-                
-                // Debug logging for first few alerts
-                if (totalThrottled <= 5) {
-                    console.log(`Alert: GPU_ID=${alert.gpu_id}, Parsed=${gpuId}, Count=${gpuCounts[gpuId]}`);
+                if (gpuCounts.hasOwnProperty(gpuId)) {
+                    gpuCounts[gpuId]++;
                 }
             });
             
-            console.log('GPU counts:', gpuCounts);
-            console.log('Total throttled:', totalThrottled);
+            // Calculate total unique throttled GPUs
+            const totalThrottled = uniqueThrottleEvents.size;
             
-            // Update summary statistics
-            document.getElementById('totalThrottled').textContent = totalThrottled;
+            // Use API throttled count if available, otherwise use calculated count
+            const apiThrottledCount = results.summary?.throttled_count || 0;
+            const finalThrottledCount = apiThrottledCount > 0 ? apiThrottledCount : totalThrottled;
             
-            // Get total devices from the results if available
-            const totalDevices = results.total_devices || 516; // Default fallback
-            document.getElementById('totalDevices').textContent = totalDevices;
+            console.log('Unique throttle events (calculated):', totalThrottled);
+            console.log('API throttled count:', apiThrottledCount);
+            console.log('Final throttled count to display:', finalThrottledCount);
+            console.log('GPU counts by ID:', gpuCounts);
             
-            // Calculate throttle rate
-            const throttleRate = totalDevices > 0 ? ((totalThrottled / totalDevices) * 100).toFixed(1) : 0;
+                        // Update summary statistics
+            document.getElementById('totalThrottled').textContent = finalThrottledCount;
+            
+            // Always use the correct infrastructure values (254 nodes, 2032 GPUs)
+            const totalGPUs = 2032; // Fixed value
+            const totalNodes = 254; // Fixed value
+            
+            document.getElementById('totalDevices').textContent = totalNodes;
+            document.getElementById('totalGPUs').textContent = totalGPUs;
+            
+            // Debug: Log what we're setting
+            console.log('Setting totalDevices to:', totalNodes);
+            console.log('Setting totalGPUs to:', totalGPUs);
+            console.log('API results summary:', results.summary);
+            console.log('Total throttled from API:', results.summary?.throttled_count);
+            
+            // Calculate throttle rate: final throttled count vs total GPUs in the system
+            const throttleRate = totalGPUs > 0 ? ((finalThrottledCount / totalGPUs) * 100).toFixed(2) : '0.00';
             document.getElementById('throttleRate').textContent = throttleRate + '%';
+            
+            // Log the throttle rate calculation
+            console.log('Throttle rate calculation:', finalThrottledCount, '/', totalGPUs, '=', throttleRate + '%');
             
                     // Update each GPU status box
         GPU_IDS.forEach(gpuId => {
             const count = gpuCounts[gpuId] || 0;
+            // Calculate percentage: unique events for this GPU ID / total unique events
             const percentage = totalThrottled > 0 ? ((count / totalThrottled) * 100).toFixed(1) : 0;
             
             // Update count and percentage

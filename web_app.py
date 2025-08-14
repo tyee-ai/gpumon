@@ -120,11 +120,8 @@ def run_analysis():
         site_id = site_config['subnet'].split('.')[1]  # Extract "4" from "10.4"
         
         # Build command for gpu_monitor.py
-        # Use production RRD path directly for reliable access
-        rrd_base_path = "/opt/docker/volumes/docker-observium_config/_data/rrd"
-        if not os.path.exists(rrd_base_path):
-            # Fallback to environment variable if production path doesn't exist
-            rrd_base_path = os.environ.get("RRD_DATA_PATH", "/app/data")
+        # Use container RRD path for Docker deployment
+        rrd_base_path = os.environ.get("RRD_BASE_PATH", "/app/rrd_data")
         
         cmd = [
             'python3', 'gpu_monitor.py',
@@ -527,30 +524,39 @@ def parse_analysis_output(output, alert_type):
     print(f"Debug: Summary generation - throttled: {len(results['throttled'])}, thermally_failed: {len(results['thermally_failed'])}")
     results['summary'] = {
         'total_devices': 'N/A',  # We don't have this info from the current output
+        'planned_gpu_nodes': 254,  # Planned infrastructure
+        'planned_total_gpus': 2032,  # Planned total GPUs (254 * 8)
         'throttled_count': len(results["throttled"]) if "throttled" in results else 0,
         'suspicious_count': len(results["thermally_failed"]) if "thermally_failed" in results else 0,
         'normal_count': 'N/A'  # We don't have this info from the current output
     }
     print(f"Debug: Summary counts - throttled_count: {results['summary']['throttled_count']}, suspicious_count: {results['summary']['suspicious_count']}")
     
-    # Try to extract additional information from raw output
-    for line in lines:
-        if 'Found' in line and 'devices matching site pattern' in line:
-            # Extract number from "Found 516 devices matching site pattern '10.4.*.*'"
-            import re
-            match = re.search(r'Found (\d+) devices', line)
-            if match:
-                results['summary']['total_devices'] = int(match.group(1))
-        elif 'Total records processed:' in line:
-            # Extract number from "📈 Total records processed: 12345"
-            match = re.search(r'Total records processed: (\d+)', line)
-            if match:
-                results['summary']['total_records'] = int(match.group(1))
-        elif 'Total alerts generated:' in line:
-            # Extract number from "🚨 Total alerts generated: 42 (after deduplication)"
-            match = re.search(r'Total alerts generated: (\d+)', line)
-            if match:
-                results['summary']['total_alerts'] = int(match.group(1))
+            # Try to extract additional information from raw output
+        for line in lines:
+            if 'Found' in line and 'GPU devices with temperature data' in line:
+                # Extract number from "Found 253 GPU devices with temperature data"
+                import re
+                match = re.search(r'Found (\d+) GPU devices with temperature data', line)
+                if match:
+                    results['summary']['total_devices'] = int(match.group(1))
+            elif 'Found' in line and 'devices matching site pattern' in line:
+                # Fallback: Extract number from "Found 516 potential devices matching site pattern '10.4.*.*'"
+                import re
+                match = re.search(r'Found (\d+) potential devices', line)
+                if match:
+                    # This is the total potential devices, not GPU devices
+                    pass
+            elif 'Total records processed:' in line:
+                # Extract number from "📈 Total records processed: 12345"
+                match = re.search(r'Total records processed: (\d+)', line)
+                if match:
+                    results['summary']['total_records'] = int(match.group(1))
+            elif 'Total alerts generated:' in line:
+                # Extract number from "📈 Total records processed: 12345"
+                match = re.search(r'Total alerts generated: (\d+)', line)
+                if match:
+                    results['summary']['total_alerts'] = int(match.group(1))
 
     return results
 
@@ -565,4 +571,12 @@ if __name__ == '__main__':
     port = int(os.environ.get('FLASK_PORT', 8090))
     debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     
-    app.run(host=host, port=port, debug=debug)
+    # SSL configuration
+    ssl_enabled = os.environ.get('FLASK_SSL', 'False').lower() == 'true'
+    ssl_cert = os.environ.get('SSL_CERT', 'cert.pem')
+    ssl_key = os.environ.get('SSL_KEY', 'key.pem')
+    
+    if ssl_enabled and os.path.exists(ssl_cert) and os.path.exists(ssl_key):
+        app.run(host=host, port=port, debug=debug, ssl_context=(ssl_cert, ssl_key))
+    else:
+        app.run(host=host, port=port, debug=debug)

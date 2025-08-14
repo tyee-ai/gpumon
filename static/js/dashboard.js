@@ -95,14 +95,40 @@ function displaySummaryCards(summary) {
     
     let html = '';
     
-    // Total devices
+    // GPU Infrastructure Summary
+    html += `
+        <div class="summary-card summary-gpu-nodes">
+            <h4><i class="fas fa-microchip text-success"></i></h4>
+            <h3>${summary.planned_gpu_nodes || 254}</h3>
+            <p class="text-muted">GPU Nodes</p>
+        </div>
+    `;
+    
+    // Total GPUs
+    html += `
+        <div class="summary-card summary-total-gpus">
+            <h4><i class="fas fa-server text-info"></i></h4>
+            <h3>${summary.planned_total_gpus || 2032}</h3>
+            <p class="text-muted">Total GPUs</p>
+        </div>
+    `;
+    
+    // GPU Devices Found (filtered count)
     if (summary.total_devices && summary.total_devices !== 'N/A') {
         html += `
-            <div class="summary-card summary-total">
-                <h4><i class="fas fa-server text-success"></i></h4>
+            <div class="summary-card summary-gpu-found">
+                <h4><i class="fas fa-search text-warning"></i></h4>
                 <h3>${summary.total_devices}</h3>
-                <p class="text-muted">Devices</p>
+                <p class="text-muted">GPU Devices Found</p>
             </div>
+        `;
+    } else {
+        html += `
+            <div class="summary-card summary-gpu-found">
+                <h4><i class="fas fa-search text-muted"></i></h4>
+                <h3>0</h3>
+                <p class="text-muted">GPU Devices Found</p>
+        </div>
         `;
     }
     

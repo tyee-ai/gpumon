@@ -72,18 +72,38 @@ print(f"   Start: {datetime.fromtimestamp(start_time).isoformat()}")
 print(f"   End:   {datetime.fromtimestamp(end_time).isoformat()}")
 
 # ----------------------------
-# Scan for Devices
+# Scan for GPU Devices Only
 # ----------------------------
 devices = []
 site_pattern = re.compile(rf"^10\.{args.site}\.\d+\.\d+$")
 
-print(f"🔎 Scanning for devices in: {args.base_path}")
+print(f"🔎 Scanning for GPU devices in: {args.base_path}")
 
+# First pass: find all devices matching site pattern
+potential_devices = []
 for entry in os.listdir(args.base_path):
     if site_pattern.match(entry):
-        devices.append(entry)
+        potential_devices.append(entry)
 
-print(f"✅ Found {len(devices)} devices matching site pattern '10.{args.site}.*.*'")
+print(f"🔍 Found {len(potential_devices)} potential devices matching site pattern '10.{args.site}.*.*'")
+
+# Second pass: filter for only devices that have GPU temperature data
+for device in potential_devices:
+    device_path = Path(args.base_path) / device
+    
+    # Check if this device has any GPU temperature RRD files
+    has_gpu_data = False
+    for oid, gpu_id in GPU_MAP.items():
+        rrd_path = device_path / f"sensor-temperature-IDRAC-MIB-SMIv2-temperatureProbeReading-{oid}.rrd"
+        if rrd_path.exists():
+            has_gpu_data = True
+            break
+    
+    # Only include devices that have GPU temperature data
+    if has_gpu_data:
+        devices.append(device)
+
+print(f"✅ Found {len(devices)} GPU devices with temperature data")
 
 device_paths = [Path(args.base_path) / dev for dev in devices]
 
