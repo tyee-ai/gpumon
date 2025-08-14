@@ -239,7 +239,7 @@
                 const endDate = new Date();
                 const startDate = new Date(endDate.getTime() - (24 * 60 * 60 * 1000));
                 
-                const response = await fetch(`/api/analysis?site=10.4.*.*&start_date=${formatDate(startDate)}&end_date=${formatDate(endDate)}&alert_type=throttled`);
+                const response = await fetch(`/api/analysis?site=DFW2&start_date=${formatDate(startDate)}&end_date=${formatDate(endDate)}&alert_type=throttled`);
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -254,10 +254,10 @@
         
         // Process cluster data and update status
         function processClusterData(cluster, results) {
-            const throttledAlerts = results.throttled_alerts || [];
+            const throttledAlerts = results.throttled || [];
             const clusterAlerts = throttledAlerts.filter(alert => {
                 // Filter alerts for this specific cluster
-                const ip = alert.ip_address;
+                const ip = alert.device;
                 if (cluster === 'C1' && ip.startsWith('10.4.11.')) return true;
                 if (cluster === 'C2' && ip.startsWith('10.4.21.')) return true;
                 return false;
@@ -329,13 +329,13 @@
                 <h5>Recent Alerts (${alerts.length})</h5>
                 ${alerts.map(alert => `
                     <div class="alert-item">
-                        <div class="alert-ip">${alert.ip_address}</div>
+                        <div class="alert-ip">${alert.device}</div>
                         <div class="alert-gpu">GPU ID: ${alert.gpu_id}</div>
-                        <div class="alert-temp">Temperature: ${alert.avg_temp}°C</div>
-                        <div class="alert-time">Alert Time: ${formatAlertTime(alert.date)}</div>
+                        <div class="alert-temp">Temperature: ${alert.max_temp}°C</div>
+                        <div class="alert-time">First Alert: ${formatAlertTime(alert.first_date)} | Last Alert: ${formatAlertTime(alert.last_date)}</div>
                     </div>
                 `).join('')}
-            `;
+        `;
         }
         
         // Update timestamp
