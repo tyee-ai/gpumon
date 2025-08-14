@@ -8,96 +8,150 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary-color: #64748b;
-            --success-color: #059669;
-            --warning-color: #d97706;
-            --danger-color: #dc2626;
-            --info-color: #0891b2;
-            --light-bg: #f8fafc;
-            --border-color: #e2e8f0;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
         body {
-            background-color: var(--light-bg);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: var(--text-primary);
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .main-container {
-            background-color: white;
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            margin: 24px auto;
-            padding: 0;
-            overflow: hidden;
-            max-width: 1400px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
-            padding: 40px 32px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
-        }
-
-        .header h1 {
+        .dashboard-header h1 {
             font-size: 2.5rem;
             font-weight: 700;
-            margin: 0 0 8px 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            font-weight: 400;
             margin: 0;
-            opacity: 0.95;
-            position: relative;
-            z-index: 1;
         }
 
-        .header .nav-link {
-            color: white;
-            text-decoration: none;
+        .dashboard-header p {
+            font-size: 1.1rem;
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+
+        .content-wrapper {
+            padding: 2rem;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .form-section h3 .icon {
+            color: #3498db;
+            font-size: 1.1rem;
+        }
+
+        .form-label {
             font-weight: 500;
-            margin-top: 16px;
-            display: inline-block;
-            padding: 8px 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .header .nav-link:hover {
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background-color: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            outline: none;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: #cbd5e1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border: none;
+            padding: 14px 32px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #2980b9 0%, #1e3a8a 100%);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: #95a5a6;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 48px 0;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: #3498db;
+        }
+
+        .loading-spinner p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-top: 16px;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .summary-cards {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: space-between !important;
+            align-items: stretch !important;
+            gap: 16px !important;
+            margin-bottom: 32px;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .summary-cards {
+                gap: 12px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .summary-cards {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.5);
             color: white;
@@ -894,19 +948,21 @@
         </nav>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="container-fluid">
-            <div class="main-container">
+            <!-- Main Content -->
+        <div class="main-content">
+            <div class="container-fluid">
                 <!-- Header -->
-                <div class="header">
-                    <h1><i class="fas fa-microchip icon"></i> GPU Thermal Query Tool</h1>
-                    <p>DFW2 Data Center GPU Temperature Analysis & Alerting System</p>
+                <div class="dashboard-header">
+                    <div class="container">
+                        <h1><i class="fas fa-microchip icon"></i> GPU Thermal Query Tool</h1>
+                        <p>DFW2 Data Center GPU Temperature Analysis & Alerting System</p>
+                    </div>
                 </div>
 
-            <div class="content-wrapper">
-                <!-- Analysis Form -->
-                <div class="form-section">
+                            <div class="container">
+                    <div class="content-wrapper">
+                        <!-- Analysis Form -->
+                        <div class="form-section">
                     <h3>
                         <i class="fas fa-cog icon"></i>
                         Analysis Configuration
@@ -1011,11 +1067,10 @@
                         </div>
                     </div>
 
-                    
-                </div>
-            </div>
-        </div> <!-- Close main-container div -->
-    </div> <!-- Close main-content div -->
+                        </div>
+                    </div>
+                </div> <!-- Close container div -->
+            </div> <!-- Close main-content div -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/dashboard.js"></script>
