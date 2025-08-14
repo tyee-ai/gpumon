@@ -155,23 +155,7 @@
             margin-bottom: 1rem;
         }
 
-        .poll-timer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-        }
 
-        .next-poll {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            min-width: 120px;
-            text-align: center;
-        }
         
         .nav-link {
             color: #3498db;
@@ -306,9 +290,7 @@
         <div class="time-display">
             <div class="current-time" id="currentTime">--:--:--</div>
             <div class="current-date" id="currentDate">--</div>
-            <div class="poll-timer">
-                <div class="next-poll" id="nextPollTime">--</div>
-            </div>
+
         </div>
 
         <div class="row" id="clusterStatus">
@@ -381,7 +363,6 @@
             
             // Initial updates
             updateClock();
-            updateNextPollTime();
         }
         
         // Check all clusters for throttling
@@ -389,7 +370,6 @@
             const promises = CLUSTERS.map(cluster => checkCluster(cluster));
             await Promise.all(promises);
             updateTimestamp();
-            updateNextPollTime();
         }
         
         // Check a specific cluster
@@ -526,26 +506,7 @@
             document.getElementById('currentDate').textContent = dateString;
         }
 
-        // Update next poll time
-        function updateNextPollTime() {
-            const now = new Date();
-            const lastPoll = clusterStatus['C1']?.lastCheck || now;
-            const nextPoll = new Date(lastPoll.getTime() + QUERY_INTERVAL);
-            const timeLeft = nextPoll.getTime() - now.getTime();
-            
-            if (timeLeft > 0) {
-                // Update next poll time
-                const nextPollString = nextPoll.toLocaleTimeString('en-US', {
-                    hour12: false,
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                document.getElementById('nextPollTime').textContent = nextPollString;
-            } else {
-                // Poll is due
-                document.getElementById('nextPollTime').textContent = 'Now';
-            }
-        }
+
         
         // Format date for API
         function formatDate(date) {
