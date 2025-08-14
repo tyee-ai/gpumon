@@ -152,7 +152,13 @@
         .current-date {
             font-size: 1.1rem;
             color: #7f8c8d;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .last-poll-time {
+            font-size: 0.9rem;
+            color: #95a5a6;
+            font-style: italic;
         }
 
 
@@ -288,9 +294,9 @@
     <div class="container">
         <!-- Real-time Clock and Poll Timer -->
         <div class="time-display">
-            <div class="current-time" id="currentTime">--:--:--</div>
+                        <div class="current-time" id="currentTime">--:--:--</div>
             <div class="current-date" id="currentDate">--</div>
-
+            <div class="last-poll-time" id="lastPollTime">Last poll: --</div>
         </div>
 
         <div class="row" id="clusterStatus">
@@ -363,6 +369,7 @@
             
             // Initial updates
             updateClock();
+            updateLastPollTime();
         }
         
         // Check all clusters for throttling
@@ -370,6 +377,7 @@
             const promises = CLUSTERS.map(cluster => checkCluster(cluster));
             await Promise.all(promises);
             updateTimestamp();
+            updateLastPollTime();
         }
         
         // Check a specific cluster
@@ -486,6 +494,18 @@
         function updateTimestamp() {
             const now = new Date();
             document.getElementById('lastUpdated').textContent = `Last updated: ${now.toLocaleString()}`;
+        }
+
+        // Update last poll time
+        function updateLastPollTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('lastPollTime').textContent = `Last poll: ${timeString}`;
         }
 
         // Update real-time clock
