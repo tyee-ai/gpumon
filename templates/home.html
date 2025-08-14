@@ -379,12 +379,9 @@
             // Start real-time clock updates (every second)
             setInterval(updateClock, 1000);
             
-            // Start countdown timer updates (every second)
-            setInterval(updateCountdown, 1000);
-            
             // Initial updates
             updateClock();
-            updateCountdown();
+            updateNextPollTime();
         }
         
         // Check all clusters for throttling
@@ -392,6 +389,7 @@
             const promises = CLUSTERS.map(cluster => checkCluster(cluster));
             await Promise.all(promises);
             updateTimestamp();
+            updateNextPollTime();
         }
         
         // Check a specific cluster
@@ -529,7 +527,7 @@
         }
 
         // Update next poll time
-        function updateCountdown() {
+        function updateNextPollTime() {
             const now = new Date();
             const lastPoll = clusterStatus['C1']?.lastCheck || now;
             const nextPoll = new Date(lastPoll.getTime() + QUERY_INTERVAL);
