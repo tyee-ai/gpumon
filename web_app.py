@@ -128,6 +128,7 @@ def run_analysis():
         # Try multiple possible RRD paths for different deployment scenarios
         possible_rrd_paths = [
             os.environ.get("RRD_BASE_PATH"),  # Environment variable
+            "/app/data",  # Docker container path (mounted volume)
             "/opt/docker/volumes/docker-observium_config/_data/rrd",  # Docker volume path
             "/app/rrd_data",  # Container path
             "/home/drew/src/gpumon/rrd_data",  # Local development path

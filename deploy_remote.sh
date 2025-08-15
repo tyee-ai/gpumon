@@ -34,7 +34,7 @@ mkdir -p /tmp/rrd_data
 mkdir -p logs
 
 # Set environment variables for local testing
-export RRD_BASE_PATH="/tmp/rrd_data"
+export RRD_BASE_PATH="/opt/docker/volumes/docker-observium_config/_data/rrd"
 export FLASK_HOST="0.0.0.0"
 export FLASK_PORT="8090"
 

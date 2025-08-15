@@ -24,8 +24,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create non-root user for security
-# Note: Running as root to access RRD files that require elevated permissions
+# Run as root to access RRD files that require elevated permissions
+USER root
 
 # Expose port
 EXPOSE 8090

@@ -7,6 +7,7 @@ services:
     container_name: gpumon-app
     ports:
       - "8090:8090"
+    user: root
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
