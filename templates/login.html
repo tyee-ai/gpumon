@@ -30,6 +30,19 @@
             margin-bottom: 2rem;
         }
         
+        .logo-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        
         .login-header h1 {
             color: #2c3e50;
             font-weight: 700;
@@ -102,7 +115,10 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1><i class="fas fa-microchip text-primary me-2"></i>GPU Monitor</h1>
+            <div class="logo-container">
+                <img src="/static/images/logo.svg" alt="VP Logo" class="login-logo">
+            </div>
+            <h1>GPU Monitor</h1>
             <p>Authentication Required</p>
         </div>
         

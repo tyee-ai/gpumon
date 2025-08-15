@@ -1,0 +1,19 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black background with rounded corners -->
+  <rect width="120" height="120" rx="12" fill="#000000"/>
+  
+  <!-- White VP monogram -->
+  <g fill="#FFFFFF" stroke="none">
+    <!-- Left arm of V (straight line) -->
+    <rect x="30" y="25" width="8" height="70" rx="4"/>
+    
+    <!-- Right arm of V (P integrated into V) -->
+    <!-- Upper P loop -->
+    <rect x="65" y="25" width="8" height="35" rx="4"/>
+    <rect x="65" y="25" width="25" height="8" rx="4"/>
+    <rect x="82" y="25" width="8" height="35" rx="4"/>
+    
+    <!-- Lower diagonal segment completing the V -->
+    <rect x="82" y="55" width="8" height="40" rx="4" transform="rotate(-45 86 75)"/>
+  </g>
+</svg>
