@@ -70,24 +70,40 @@ function runAnalysis() {
 }
 
 function displayResults(data) {
-    const resultsSection = document.getElementById('resultsSection');
-    const summaryCards = document.getElementById('summaryCards');
-    const throttledSection = document.getElementById('throttledSection');
-    const thermallyFailedSection = document.getElementById('thermallyFailedSection');
-    // Display summary cards
-    displaySummaryCards(data.results.summary);
-    
-    // Display throttled alerts
-    displayThrottledAlerts(data.results.throttled);
-    
-    // Display thermally failed alerts
-    displayThermallyFailedAlerts(data.results.thermally_failed);
-    
-    // Show results section
-    resultsSection.style.display = 'block';
-    
-    // Scroll to results
-    resultsSection.scrollIntoView({ behavior: 'smooth' });
+    try {
+        console.log('displayResults called with:', data);
+        
+        const resultsSection = document.getElementById('resultsSection');
+        const summaryCards = document.getElementById('summaryCards');
+        const throttledSection = document.getElementById('throttledSection');
+        const thermallyFailedSection = document.getElementById('thermallyFailedSection');
+        
+        console.log('DOM elements found:', {
+            resultsSection: !!resultsSection,
+            summaryCards: !!summaryCards,
+            throttledSection: !!throttledSection,
+            thermallyFailedSection: !!thermallyFailedSection
+        });
+        
+        // Display summary cards
+        displaySummaryCards(data.results.summary);
+        
+        // Display throttled alerts
+        console.log('Throttled alerts to display:', data.results.throttled);
+        displayThrottledAlerts(data.results.throttled);
+        
+        // Display thermally failed alerts
+        displayThermallyFailedAlerts(data.results.thermally_failed);
+        
+        // Show results section
+        if (resultsSection) {
+            resultsSection.style.display = 'block';
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    } catch (error) {
+        console.error('Error in displayResults:', error);
+    }
 }
 
 function displaySummaryCards(summary) {
@@ -185,33 +201,53 @@ function displaySummaryCards(summary) {
 }
 
 function displayThrottledAlerts(alerts) {
-    const container = document.getElementById("throttledAlerts");
-    
-    // Clear existing content
-    container.innerHTML = "";
-    
-    if (!alerts || alerts.length === 0) {
-        const row = document.createElement("tr");
-        row.innerHTML = "<td colspan=\"9\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
-        container.appendChild(row);
-        return;
+    try {
+        console.log('displayThrottledAlerts called with:', alerts);
+        
+        const container = document.getElementById("throttledAlerts");
+        console.log('Container element:', container);
+        
+        if (!container) {
+            console.error('throttledAlerts container not found!');
+            return;
+        }
+        
+        // Clear existing content
+        container.innerHTML = "";
+        
+        if (!alerts || alerts.length === 0) {
+            console.log('No throttled alerts to display');
+            const row = document.createElement("tr");
+            row.innerHTML = "<td colspan=\"9\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
+            container.appendChild(row);
+            return;
+        }
+        
+        console.log(`Displaying ${alerts.length} throttled alerts`);
+        
+        alerts.forEach((alert, index) => {
+            try {
+                console.log(`Processing alert ${index}:`, alert);
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><strong>${alert.site || "Unknown"}</strong></td>
+                    <td><strong>${alert.cluster || "Unknown"}</strong></td>
+                    <td><strong>${alert.device}</strong></td>
+                    <td><strong>${alert.gpu_id}</strong></td>
+                    <td><strong class="text-danger">${alert.max_temp}&deg;C</strong></td>
+                    <td>${formatTimestamp(alert.first_date)}</td>
+                    <td>${formatTimestamp(alert.last_date)}</td>
+                    <td><strong class="${alert.days_throttled === 1 ? 'text-success' : 'text-danger'}">${alert.days_throttled} day${alert.days_throttled > 1 ? 's' : ''}</strong></td>
+                    <td><span class="badge bg-dark">${alert.alert_count || 1}</span></td>
+                `;
+                container.appendChild(row);
+            } catch (alertError) {
+                console.error(`Error processing alert ${index}:`, alertError, alert);
+            }
+        });
+    } catch (error) {
+        console.error('Error in displayThrottledAlerts:', error);
     }
-    
-    alerts.forEach(alert => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td><strong>${alert.site || "Unknown"}</strong></td>
-            <td><strong>${alert.cluster || "Unknown"}</strong></td>
-            <td><strong>${alert.device}</strong></td>
-            <td><strong>${alert.gpu_id}</strong></td>
-            <td><strong class=\"text-danger\">${alert.max_temp}°C</strong></td>
-            <td>${formatTimestamp(alert.first_date)}</td>
-            <td>${formatTimestamp(alert.last_date)}</td>
-            <td><strong class="${alert.days_throttled === 1 ? 'text-success' : 'text-danger'}">${alert.days_throttled} day${alert.days_throttled > 1 ? 's' : ''}</strong></td>
-            <td><span class="badge bg-dark">${alert.alert_count || 1}</span></td>
-        `;
-        container.appendChild(row);
-    });
 }
 function displayThermallyFailedAlerts(alerts) {
     const container = document.getElementById("thermallyFailedAlerts");
@@ -262,7 +298,7 @@ function displayThermallyFailedAlerts(alerts) {
         const tempCell = document.createElement("div");
         tempCell.className = "custom-table-cell";
         tempCell.style.width = "12%";
-        tempCell.innerHTML = `<strong class="text-warning">${alert.max_temp}°C</strong>`;
+        tempCell.innerHTML = `<strong class="text-warning">${alert.max_temp}&deg;C</strong>`;
         
         const firstDateCell = document.createElement("div");
         firstDateCell.className = "custom-table-cell";
