@@ -532,8 +532,8 @@ def parse_analysis_output(output, alert_type):
     }
     print(f"Debug: Summary counts - throttled_count: {results['summary']['throttled_count']}, suspicious_count: {results['summary']['suspicious_count']}")
     
-            # Try to extract additional information from raw output
-        for line in lines:
+    # Try to extract additional information from raw output
+    for line in lines:
             if 'Found' in line and 'GPU devices with temperature data' in line:
                 # Extract number from "Found 253 GPU devices with temperature data"
                 import re
