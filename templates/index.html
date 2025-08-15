@@ -1055,9 +1055,6 @@
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-search me-2"></i>Run Analysis
                                 </button>
-                                <button type="button" class="btn btn-secondary btn-lg ms-2" onclick="testDisplay()">
-                                    <i class="fas fa-bug me-2"></i>Test Display
-                                </button>
                             </div>
                         </div>
                     </form>
@@ -1076,11 +1073,7 @@
                     <!-- Summary Cards -->
                     <div class="summary-cards" id="summaryCards"></div>
                     
-                    <!-- Note about device counting -->
-                    <div class="alert alert-info text-center" style="margin: 2rem 0;">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note:</strong> The summary cards show your GPU infrastructure: 254 GPU nodes with 8 GPUs each = 2032 total GPUs. "GPU Devices Found" shows the actual GPU devices with temperature data found in your RRD files (may differ from planned infrastructure).
-                    </div>
+
 
                     <!-- Throttled GPUs -->
                     <div class="alert-section" id="throttledSection">
