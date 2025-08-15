@@ -3,6 +3,8 @@
 let isAnalysisRunning = false;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - dashboard.js loaded successfully');
+    
     // Set default dates
     const today = new Date();
     const lastWeek = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
@@ -14,9 +16,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('analysisForm');
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        console.log('Form submitted - running analysis');
         runAnalysis();
     });
+    
+    console.log('Dashboard initialization complete');
 });
+
+// Test function to manually test the display
+function testDisplay() {
+    console.log('Test display function called');
+    
+    const testData = {
+        results: {
+            summary: {
+                throttled_count: 9,
+                total_devices: 253,
+                planned_gpu_nodes: 254,
+                planned_total_gpus: 2032,
+                total_records: 28052,
+                total_alerts: 1390
+            },
+            throttled: [
+                {
+                    site: "DFW2",
+                    cluster: "C1",
+                    device: "10.4.11.38",
+                    gpu_id: "GPU_23",
+                    max_temp: 93.0,
+                    first_date: "2025-07-25 00:00:00",
+                    last_date: "2025-07-25 16:00:00",
+                    days_throttled: 1,
+                    alert_count: 3
+                }
+            ]
+        }
+    };
+    
+    console.log('Test data:', testData);
+    displayResults(testData);
+}
 
 function runAnalysis() {
     if (isAnalysisRunning) {
