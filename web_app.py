@@ -4,7 +4,7 @@ GPU RRD Monitor Web Frontend
 Provides web interface for GPU temperature analysis
 """
 
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, make_response, send_file
 import subprocess
 import json
 from datetime import datetime, timedelta
@@ -97,6 +97,11 @@ def analytics():
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
+
+@app.route('/test')
+def test_page():
+    """Simple test page for debugging frontend issues"""
+    return send_file('simple_test.html')
 
 @app.route('/api/analysis', methods=['GET'])
 def run_analysis():

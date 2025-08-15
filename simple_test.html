@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple GPU Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Simple GPU Frontend Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Direct API Call</h3>
+        <button onclick="testDirectAPI()">Test API Directly</button>
+        <div id="apiResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: Manual Data Display</h3>
+        <button onclick="testManualDisplay()">Test Manual Display</button>
+        <div id="manualResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 3: DOM Element Check</h3>
+        <button onclick="checkDOMElements()">Check DOM Elements</button>
+        <div id="domResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 4: Simulate Real Data</h3>
+        <button onclick="simulateRealData()">Simulate Real API Response</button>
+        <div id="simulateResult"></div>
+    </div>
+    
+    <script>
+        // Test 1: Direct API call
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p class="info">Testing API call...</p>';
+            
+            try {
+                const response = await fetch('/api/analysis?site=DFW2&start_date=2025-07-01&end_date=2025-08-15&alert_type=throttled');
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ API call successful!</p>
+                    <p><strong>Success:</strong> ${data.success}</p>
+                    <p><strong>Throttled Count:</strong> ${data.results?.summary?.throttled_count || 'Not found'}</p>
+                    <p><strong>Throttled Array Length:</strong> ${data.results?.throttled?.length || 'Not found'}</p>
+                    <p><strong>First GPU:</strong> ${data.results?.throttled?.[0]?.device || 'None'}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ API call failed: ${error.message}</p>`;
+            }
+        }
+        
+        // Test 2: Manual data display
+        function testManualDisplay() {
+            const resultDiv = document.getElementById('manualResult');
+            
+            const testData = {
+                throttled_count: 9,
+                total_devices: 253,
+                planned_gpu_nodes: 254,
+                planned_total_gpus: 2032
+            };
+            
+            resultDiv.innerHTML = `
+                <p class="success">✅ Manual display test:</p>
+                <p><strong>Throttled Count:</strong> ${testData.throttled_count}</p>
+                <p><strong>Total Devices:</strong> ${testData.total_devices}</p>
+                <p><strong>Planned GPU Nodes:</strong> ${testData.planned_gpu_nodes}</p>
+                <p><strong>Planned Total GPUs:</strong> ${testData.planned_total_gpus}</p>
+            `;
+        }
+        
+        // Test 3: Check DOM elements
+        function checkDOMElements() {
+            const resultDiv = document.getElementById('domResult');
+            
+            // Create test elements
+            const testContainer = document.createElement('div');
+            testContainer.id = 'testThrottledAlerts';
+            testContainer.innerHTML = '<p>Test container created</p>';
+            document.body.appendChild(testContainer);
+            
+            const container = document.getElementById('testThrottledAlerts');
+            
+            resultDiv.innerHTML = `
+                <p class="info">DOM Element Test:</p>
+                <p><strong>Test Container Found:</strong> ${container ? 'Yes' : 'No'}</p>
+                <p><strong>Container InnerHTML:</strong> ${container ? container.innerHTML : 'N/A'}</p>
+            `;
+            
+            // Clean up
+            document.body.removeChild(testContainer);
+        }
+        
+        // Test 4: Simulate real data
+        function simulateRealData() {
+            const resultDiv = document.getElementById('simulateResult');
+            
+            const simulatedData = {
+                results: {
+                    summary: {
+                        throttled_count: 9,
+                        total_devices: 253,
+                        planned_gpu_nodes: 254,
+                        planned_total_gpus: 2032
+                    },
+                    throttled: [
+                        {
+                            site: "DFW2",
+                            cluster: "C1",
+                            device: "10.4.11.38",
+                            gpu_id: "GPU_23",
+                            max_temp: 93.0,
+                            first_date: "2025-07-25 00:00:00",
+                            last_date: "2025-07-25 16:00:00",
+                            days_throttled: 1,
+                            alert_count: 3
+                        }
+                    ]
+                }
+            };
+            
+            resultDiv.innerHTML = `
+                <p class="success">✅ Simulated data:</p>
+                <p><strong>Throttled Count:</strong> ${simulatedData.results.summary.throttled_count}</p>
+                <p><strong>Throttled GPUs:</strong> ${simulatedData.results.throttled.length}</p>
+                <p><strong>First GPU:</strong> ${simulatedData.results.throttled[0].device} - ${simulatedData.results.throttled[0].gpu_id}</p>
+                <p><strong>Temperature:</strong> ${simulatedData.results.throttled[0].max_temp}°C</p>
+            `;
+        }
+        
+        // Page load test
+        window.onload = function() {
+            console.log('Simple test page loaded successfully');
+            document.body.innerHTML += '<p class="success">✅ Page loaded and JavaScript is working!</p>';
+        };
+    </script>
+</body>
+</html>
