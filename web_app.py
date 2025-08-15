@@ -4,7 +4,7 @@ GPU RRD Monitor Web Frontend
 Provides web interface for GPU temperature analysis
 """
 
-from flask import Flask, render_template, request, jsonify, make_response, send_file
+from flask import Flask, render_template, request, jsonify, make_response, send_file, session, redirect, url_for
 import subprocess
 import json
 from datetime import datetime, timedelta
@@ -52,6 +52,12 @@ import re
 
 app = Flask(__name__)
 
+# Authentication configuration
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'gpumon-secret-key-change-in-production')
+CREDENTIALS = {
+    'gpumon': 'v0lt4g3p4rk'
+}
+
 # Configuration
 SITES = {
     "DFW2": {
@@ -63,7 +69,39 @@ SITES = {
 
 DEFAULT_SITE = "DFW2"
 
+def login_required(f):
+    """Decorator to require login for protected routes"""
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login page and authentication"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username in CREDENTIALS and CREDENTIALS[username] == password:
+            session['logged_in'] = True
+            session['username'] = username
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', error='Invalid username or password')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    """Logout and clear session"""
+    session.clear()
+    return redirect(url_for('login'))
+
 @app.route('/')
+@login_required
 def home():
     """Home page with cluster status dashboard"""
     response = make_response(render_template('home.html'))
@@ -73,6 +111,7 @@ def home():
     return response
 
 @app.route('/query')
+@login_required
 def index():
     """Main dashboard page"""
     # Set default dates (last 7 days)
@@ -90,6 +129,7 @@ def index():
     return response
 
 @app.route('/analytics')
+@login_required
 def analytics():
     """Analytics page with GPU throttling breakdown"""
     response = make_response(render_template('analytics.html'))
@@ -99,6 +139,7 @@ def analytics():
     return response
 
 @app.route('/test')
+@login_required
 def test_page():
     """Simple test page for debugging frontend issues"""
     return send_file('simple_test.html')
