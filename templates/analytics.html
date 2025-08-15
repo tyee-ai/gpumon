@@ -416,22 +416,37 @@
         // Load analytics data from API
         async function loadAnalyticsData() {
             try {
+                console.log('Loading analytics data...');
+                
                 // Get selected dates from the form
                 const startDateStr = document.getElementById('startDate').value;
                 const endDateStr = document.getElementById('endDate').value;
+                
+                console.log('Selected dates:', startDateStr, 'to', endDateStr);
                 
                 if (!startDateStr || !endDateStr) {
                     console.error('Please select both start and end dates');
                     return;
                 }
                 
-                const response = await fetch(`/api/analysis?site=DFW2&start_date=${startDateStr}&end_date=${endDateStr}&alert_type=both`);
+                const apiUrl = `/api/analysis?site=DFW2&start_date=${startDateStr}&end_date=${endDateStr}&alert_type=both`;
+                console.log('API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                console.log('API response status:', response.status);
                 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('API response data:', data);
+                    
                     if (data.success) {
+                        console.log('Processing analytics data...');
                         processAnalyticsData(data.results);
+                    } else {
+                        console.error('API returned success: false');
                     }
+                } else {
+                    console.error('API request failed with status:', response.status);
                 }
             } catch (error) {
                 console.error('Error loading analytics data:', error);
@@ -455,9 +470,9 @@
             
             // Process throttled alerts for unique events
             throttledAlerts.forEach(alert => {
-                if (alert.ip && alert.gpu_id) {
+                if (alert.device && alert.gpu_id) {
                     // Create unique key: IP + GPU_ID
-                    const uniqueKey = `${alert.ip}_${alert.gpu_id}`;
+                    const uniqueKey = `${alert.device}_${alert.gpu_id}`;
                     if (!uniqueThrottleEvents.has(uniqueKey)) {
                         uniqueThrottleEvents.set(uniqueKey, alert);
                     }
