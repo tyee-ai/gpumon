@@ -22,29 +22,36 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if docker-compose is available
-if ! command -v docker-compose > /dev/null 2>&1; then
-    echo "❌ docker-compose not found. Please install docker-compose and try again."
+# Check for docker-compose or docker compose
+DOCKER_COMPOSE_CMD=""
+if command -v docker-compose > /dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+elif docker compose version > /dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
+    echo "❌ Neither 'docker-compose' nor 'docker compose' found."
+    echo "Please install docker-compose or ensure Docker Compose plugin is available."
     exit 1
 fi
 
 echo "✅ Prerequisites check passed"
+echo "🔧 Using: $DOCKER_COMPOSE_CMD"
 echo ""
 
 # Stop any existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose down 2>/dev/null || true
+$DOCKER_COMPOSE_CMD down 2>/dev/null || true
 
 # Build and start the application
 echo "🔨 Building and starting GPU Monitor with HTTPS..."
-docker-compose up --build -d
+$DOCKER_COMPOSE_CMD up --build -d
 
 # Wait for the application to start
 echo "⏳ Waiting for application to start..."
 sleep 10
 
 # Check if the application is running
-if docker-compose ps | grep -q "Up"; then
+if $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
     echo ""
     echo "🎉 GPU Monitor is now running with HTTPS!"
     echo "========================================"
@@ -58,14 +65,14 @@ if docker-compose ps | grep -q "Up"; then
     echo "⚠️  Note: Accept the certificate warning in your browser"
     echo ""
     echo "📊 Container Status:"
-    docker-compose ps
+    $DOCKER_COMPOSE_CMD ps
     echo ""
-    echo "📝 Logs: docker-compose logs -f"
-    echo "🛑 Stop: docker-compose down"
+    echo "📝 Logs: $DOCKER_COMPOSE_CMD logs -f"
+    echo "🛑 Stop: $DOCKER_COMPOSE_CMD down"
     echo ""
     echo "🔒 Your GPU Monitor is now secure with HTTPS!"
 else
     echo "❌ Failed to start GPU Monitor. Check logs with:"
-    echo "   docker-compose logs"
+    echo "   $DOCKER_COMPOSE_CMD logs"
     exit 1
 fi
