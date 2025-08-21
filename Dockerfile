@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y \
     librrd-dev \
     build-essential \
     curl \
+    openssl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python RRD tool module
@@ -21,18 +23,21 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Create SSL directory
+RUN mkdir -p /app/ssl
+
 # Copy application code
 COPY . .
 
 # Run as root to access RRD files that require elevated permissions
 USER root
 
-# Expose port
-EXPOSE 8090
+# Expose both HTTP and HTTPS ports
+EXPOSE 8090 8443
 
-# Health check
+# Health check for HTTPS (with -k flag to ignore self-signed cert)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8090/ || exit 1
+    CMD curl -f -k https://localhost:8443/ || curl -f http://localhost:8090/ || exit 1
 
 # Run the application
 CMD ["python3", "web_app.py"]

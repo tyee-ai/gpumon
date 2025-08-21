@@ -12,24 +12,19 @@ def get_site_and_cluster(ip_address):
     """Determine site and cluster based on IP address"""
     try:
         ip_obj = ipaddress.ip_address(ip_address)
-        # Handle 10.4.x.x range
-        if str(ip_obj).startswith("10.4."):
-            # Extract cluster from third octet and map to C1/C2
-            octets = str(ip_obj).split('.')
-            if len(octets) >= 3:
-                third_octet = octets[2]
-                # Map 11.x.x to C1, 21.x.x to C2
-                if third_octet == "11":
-                    cluster = "C1"
-                elif third_octet == "21":
-                    cluster = "C2"
-                else:
-                    cluster = f"C{third_octet}"  # Fallback for other octets
-                return "DFW2", cluster
-            else:
-                return "DFW2", "Unknown"
-        else:
-            return "DFW2", "Unknown"
+        
+        # Check each site's IP ranges
+        for site_code, site_info in SITES.items():
+            for cluster_name, cluster_info in site_info.get("ip_ranges", {}).items():
+                start_ip = ipaddress.ip_address(cluster_info["start"])
+                end_ip = ipaddress.ip_address(cluster_info["end"])
+                
+                if start_ip <= ip_obj <= end_ip:
+                    return site_code, cluster_name
+        
+        # If no match found, return unknown
+        return "Unknown", "Unknown"
+        
     except ValueError:
         return "Unknown", "Unknown"
 
@@ -61,9 +56,73 @@ CREDENTIALS = {
 # Configuration
 SITES = {
     "DFW2": {
-        "name": "DFW2",
+        "name": "Dallas-Fort Worth 2",
         "subnet": "10.4",
-        "description": "Dallas-Fort Worth Data Center 2"
+        "description": "Dallas-Fort Worth Data Center 2",
+        "total_gpu_nodes": 254,
+        "total_gpus": 2032,
+        "gpus_per_node": 8,
+        "rrd_path": "/opt/docker/volumes/docker-observium_config/_data/rrd",
+        "ip_ranges": {
+            "Cluster 1": {
+                "start": "10.4.11.1",
+                "end": "10.4.11.127",
+                "count": 127
+            },
+            "Cluster 2": {
+                "start": "10.4.21.1",
+                "end": "10.4.21.127",
+                "count": 127
+            }
+        }
+    },
+    "SITE2": {
+        "name": "Site 2",
+        "subnet": "10.5",
+        "description": "Site 2 Data Center",
+        "total_gpu_nodes": 128,
+        "total_gpus": 1024,
+        "gpus_per_node": 8,
+        "rrd_path": "/opt/docker/volumes/site2_observium_config/_data/rrd",
+        "ip_ranges": {
+            "Cluster 1": {
+                "start": "10.5.11.1",
+                "end": "10.5.11.127",
+                "count": 127
+            }
+        }
+    },
+    "SITE3": {
+        "name": "Site 3",
+        "subnet": "10.6",
+        "description": "Site 3 Data Center",
+        "total_gpu_nodes": 96,
+        "total_gpus": 768,
+        "gpus_per_node": 8,
+        "rrd_path": "/opt/docker/volumes/site3_observium_config/_data/rrd",
+        "ip_ranges": {
+            "Cluster 1": {
+                "start": "10.6.11.1",
+                "end": "10.6.11.96",
+                "count": 96
+            }
+        }
+    },
+    "SITE4": {
+        "name": "Site 4",
+        "subnet": "10.7",
+        "description": "Site 4 Data Center",
+        "total_gpu_nodes": 64,
+        "total_gpus": 512,
+        "gpus_per_node": 8,
+        "rrd_path": "/opt/docker/volumes/site4_observium_config/_data/rrd",
+        "ip_ranges": {
+            "Cluster 1": {
+                "start": "10.7.11.1",
+                "end": "10.7.11.64",
+                "count": 64
+            }
+        }
     }
 }
 
@@ -104,7 +163,7 @@ def logout():
 @login_required
 def home():
     """Home page with cluster status dashboard"""
-    response = make_response(render_template('home.html'))
+    response = make_response(render_template('home.html', sites=SITES, default_site=DEFAULT_SITE))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -132,7 +191,7 @@ def index():
 @login_required
 def analytics():
     """Analytics page with GPU throttling breakdown"""
-    response = make_response(render_template('analytics.html'))
+    response = make_response(render_template('analytics.html', sites=SITES, default_site=DEFAULT_SITE))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -165,9 +224,10 @@ def run_analysis():
         site_config = SITES[site]
         site_id = site_config['subnet'].split('.')[1]  # Extract "4" from "10.4"
         
-        # Build command for gpu_monitor.py
-        # Try multiple possible RRD paths for different deployment scenarios
+        # Use site-specific RRD path if available, otherwise fall back to environment variable
+        site_rrd_path = site_config.get('rrd_path')
         possible_rrd_paths = [
+            site_rrd_path,  # Site-specific RRD path
             os.environ.get("RRD_BASE_PATH"),  # Environment variable
             "/app/data",  # Docker container path (mounted volume)
             "/opt/docker/volumes/docker-observium_config/_data/rrd",  # Docker volume path
@@ -180,13 +240,13 @@ def run_analysis():
         for path in possible_rrd_paths:
             if path and os.path.exists(path):
                 rrd_base_path = path
-                print(f"Debug: Using RRD path: {rrd_base_path}")
+                print(f"Debug: Using RRD path for {site}: {rrd_base_path}")
                 break
         
         if not rrd_base_path:
-            # If no path exists, use the first one and let it fail gracefully
-            rrd_base_path = possible_rrd_paths[0] or "/tmp/rrd_data"
-            print(f"Debug: No RRD path found, using: {rrd_base_path}")
+            # If no path exists, use the site-specific path and let it fail gracefully
+            rrd_base_path = site_rrd_path or possible_rrd_paths[1] or "/tmp/rrd_data"
+            print(f"Debug: No RRD path found for {site}, using: {rrd_base_path}")
         
         cmd = [
             'python3', 'gpu_monitor.py',
@@ -723,11 +783,22 @@ if __name__ == '__main__':
     debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     
     # SSL configuration
-    ssl_enabled = os.environ.get('FLASK_SSL', 'False').lower() == 'true'
-    ssl_cert = os.environ.get('SSL_CERT', 'cert.pem')
-    ssl_key = os.environ.get('SSL_KEY', 'key.pem')
+    ssl_enabled = os.environ.get('FLASK_SSL', 'True').lower() == 'true'
+    ssl_cert = os.environ.get('SSL_CERT', '/app/ssl/cert.pem')
+    ssl_key = os.environ.get('SSL_KEY', '/app/ssl/key.pem')
     
-    if ssl_enabled and os.path.exists(ssl_cert) and os.path.exists(ssl_key):
-        app.run(host=host, port=port, debug=debug, ssl_context=(ssl_cert, ssl_key))
+    print(f"Starting GPU Monitor on {host}:{port}")
+    print(f"Debug mode: {debug}")
+    print(f"SSL enabled: {ssl_enabled}")
+    
+    if ssl_enabled:
+        # Check if SSL certificates exist
+        if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
+            print(f"Using SSL certificates: {ssl_cert}, {ssl_key}")
+            app.run(host=host, port=port, debug=debug, ssl_context=(ssl_cert, ssl_key))
+        else:
+            print(f"SSL enabled but certificates not found at {ssl_cert}, {ssl_key}")
+            print("Falling back to HTTP mode")
+            app.run(host=host, port=port, debug=debug)
     else:
         app.run(host=host, port=port, debug=debug)

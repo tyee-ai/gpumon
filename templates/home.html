@@ -326,6 +326,27 @@
             </div>
         </div>
 
+        <!-- Site Selection -->
+        <div class="container mt-3">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <label for="siteSelect" class="form-label fw-bold">Select Site:</label>
+                            <select class="form-select" id="siteSelect" onchange="changeSite()">
+                                {% for site_code, site_info in sites.items() %}
+                                    <option value="{{ site_code }}" {% if site_code == default_site %}selected{% endif %}>
+                                        {{ site_code }} - {{ site_info.name }} ({{ site_info.total_gpu_nodes }} nodes, {{ site_info.total_gpus }} GPUs)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Current site: <span id="currentSite">{{ default_site }}</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <div class="container">
         <!-- Real-time Clock and Poll Timer -->
         <div class="time-display">
@@ -347,7 +368,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Configuration
-        const CLUSTERS = ['C1', 'C2']; // Add more clusters as needed
+        let currentSite = '{{ default_site }}';
+        let currentSiteConfig = {{ sites|tojson }};
+        let CLUSTERS = []; // Will be populated dynamically based on site
         const QUERY_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
         const BLINK_DURATION = 10000; // 10 seconds in milliseconds
         
@@ -358,8 +381,51 @@
         let clusterStatus = {};
         let blinkTimers = {};
         
+        // Function to change site
+        function changeSite() {
+            const siteSelect = document.getElementById('siteSelect');
+            const newSite = siteSelect.value;
+            
+            if (newSite !== currentSite) {
+                currentSite = newSite;
+                document.getElementById('currentSite').textContent = newSite;
+                
+                // Update clusters based on new site
+                updateClustersForSite(newSite);
+                
+                // Clear existing status and restart monitoring
+                clearClusterStatus();
+                initializeDashboard();
+            }
+        }
+        
+        // Function to update clusters based on selected site
+        function updateClustersForSite(siteCode) {
+            const siteConfig = currentSiteConfig[siteCode];
+            if (siteConfig && siteConfig.ip_ranges) {
+                CLUSTERS = Object.keys(siteConfig.ip_ranges);
+                console.log(`Updated clusters for ${siteCode}:`, CLUSTERS);
+            } else {
+                CLUSTERS = ['C1', 'C2']; // Default fallback
+                console.log(`Using default clusters for ${siteCode}:`, CLUSTERS);
+            }
+        }
+        
+        // Function to clear cluster status
+        function clearClusterStatus() {
+            clusterStatus = {};
+            blinkTimers = {};
+            const container = document.getElementById('clusterStatus');
+            container.innerHTML = '';
+        }
+        
         // Initialize dashboard
         function initializeDashboard() {
+            // Initialize clusters for current site if not already done
+            if (CLUSTERS.length === 0) {
+                updateClustersForSite(currentSite);
+            }
+            
             const container = document.getElementById('clusterStatus');
             
             CLUSTERS.forEach(cluster => {
@@ -437,7 +503,7 @@
                 const startDateStr = startDate.toISOString().split('T')[0];
                 const endDateStr = endDate.toISOString().split('T')[0];
                 
-                const response = await fetch(`/api/analysis?site=DFW2&start_date=${startDateStr}&end_date=${endDateStr}&alert_type=throttled`);
+                const response = await fetch(`/api/analysis?site=${currentSite}&start_date=${startDateStr}&end_date=${endDateStr}&alert_type=throttled`);
                 
                 if (response.ok) {
                     const data = await response.json();
