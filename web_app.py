@@ -257,6 +257,10 @@ def run_analysis():
             '--end-date', end_date
         ]
         
+        print(f"Debug: Running command: {' '.join(cmd)}")
+        print(f"Debug: Working directory: {os.getcwd()}")
+        print(f"Debug: RRD base path: {rrd_base_path}")
+        
         # Run the analysis
         result = subprocess.run(
             cmd,
@@ -266,9 +270,14 @@ def run_analysis():
             cwd='.'
         )
         
+        print(f"Debug: Command completed with return code: {result.returncode}")
+        print(f"Debug: stdout length: {len(result.stdout)}")
+        print(f"Debug: stderr length: {len(result.stderr)}")
+        
         if result.returncode != 0:
             print(f"Debug: gpu_monitor.py failed with return code {result.returncode}")
             print(f"Debug: stderr: {result.stderr}")
+            print(f"Debug: stdout: {result.stdout[:500] if result.stdout else 'No stdout'}")
             
             # Return fallback data instead of error for better user experience
             fallback_results = {

@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    rrdtool \
     python3-rrdtool \
     python3-pip \
     librrd-dev \
