@@ -340,3 +340,12 @@ else:
                 print("🔥 {} {} {} Temp: {}°C".format(alert["timestamp"], alert["node"], alert["gpu_id"], alert["temp"]))
             elif alert["reason"] == "Thermally Failed":
                 print("⚠️  {} {} {} Temp: {}°C (Avg: {}°C) - Nearest Cooler: {} at {}°C (diff: {}°C)".format(alert["timestamp"], alert["node"], alert["gpu_id"], alert["temp"], alert["avg_temp"], alert["nearest_cooler_gpu"], alert["nearest_cooler_temp"], alert["nearest_cooler_diff"]))
+
+# ----------------------------
+# Main Execution
+# ----------------------------
+if __name__ == "__main__":
+    # This script should only run when called directly, not when imported
+    print(f"✅ GPU Monitor script completed successfully")
+    print(f"📊 Summary: {record_count} records processed, {len(alerts) if not args.full else len(full_high_temp) + len(full_suspicious)} alerts generated")
+    sys.exit(0)
