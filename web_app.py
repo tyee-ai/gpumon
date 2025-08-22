@@ -848,56 +848,7 @@ if __name__ == '__main__':
         if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
             print(f"Using SSL certificates: {ssl_cert}, {ssl_key}")
             
-            # Create a simple HTTP redirect server on port 8090
-            import threading
-            from http.server import HTTPServer, BaseHTTPRequestHandler
-            import urllib.parse
-            
-            class RedirectHandler(BaseHTTPRequestHandler):
-                def do_GET(self):
-                    # Parse the request path and query string
-                    parsed = urllib.parse.urlparse(self.path)
-                    path = parsed.path
-                    query = parsed.query
-                    
-                    # Build the HTTPS URL
-                    https_url = f"https://{self.headers.get('Host', 'localhost').split(':')[0]}:{https_port}{path}"
-                    if query:
-                        https_url += f"?{query}"
-                    
-                    # Send 301 redirect
-                    self.send_response(301)
-                    self.send_header('Location', https_url)
-                    self.send_header('Content-Type', 'text/html')
-                    self.end_headers()
-                    
-                    # Send redirect page
-                    redirect_html = f"""
-                    <!doctype html>
-                    <html lang=en>
-                    <title>Redirecting...</title>
-                    <h1>Redirecting...</h1>
-                    <p>You should be redirected automatically to the target URL: <a href="{https_url}">{https_url}</a>. If not, click the link.</p>
-                    """
-                    self.wfile.write(redirect_html.encode())
-                
-                def log_message(self, format, *args):
-                    # Suppress access logs for the redirect server
-                    pass
-            
-            # Start HTTP redirect server in a separate thread
-            def run_http_redirect():
-                try:
-                    httpd = HTTPServer((host, http_port), RedirectHandler)
-                    print(f"HTTP redirect server started on port {http_port}")
-                    httpd.serve_forever()
-                except Exception as e:
-                    print(f"HTTP redirect server failed: {e}")
-            
-            http_thread = threading.Thread(target=run_http_redirect, daemon=True)
-            http_thread.start()
-            
-            # Start main HTTPS server on main thread
+            # Start HTTPS server on the main port
             print(f"Starting HTTPS server on port {https_port}")
             app.run(host=host, port=https_port, debug=debug, ssl_context=(ssl_cert, ssl_key))
         else:
