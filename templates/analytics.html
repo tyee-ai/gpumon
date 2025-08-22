@@ -66,6 +66,12 @@
             opacity: 0.9;
         }
         
+        .gpu-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        
         .summary-stats {
             background: white;
             border-radius: 15px;
@@ -327,82 +333,27 @@
             
 
 
-            <!-- GPU Status Grid -->
+            <!-- Cluster Status Grid -->
             <div class="row">
-                <!-- Top Row: GPU_24, GPU_23, GPU_22, GPU_21 -->
-                <div class="col-md-3">
+                <!-- Cluster 1: 10.4.11.x subnet (127 nodes, 1016 GPUs) -->
+                <div class="col-md-6">
                     <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_24</div>
-                        <div class="gpu-status-box low" id="gpu-24">
-                            <div class="gpu-count" id="count-24">0</div>
-                            <div class="gpu-percentage" id="percent-24">0%</div>
+                        <div class="gpu-label">Cluster 1 (10.4.11.x)</div>
+                        <div class="gpu-status-box low" id="cluster-C1">
+                            <div class="gpu-count" id="count-C1">0</div>
+                            <div class="gpu-percentage" id="percent-C1">0%</div>
+                            <div class="gpu-subtitle">127 Nodes • 1016 GPUs</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <!-- Cluster 2: 10.4.21.x subnet (127 nodes, 1016 GPUs) -->
+                <div class="col-md-6">
                     <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_23</div>
-                        <div class="gpu-status-box low" id="gpu-23">
-                            <div class="gpu-count" id="count-23">0</div>
-                            <div class="gpu-percentage" id="percent-23">0%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_22</div>
-                        <div class="gpu-status-box low" id="gpu-22">
-                            <div class="gpu-count" id="count-22">0</div>
-                            <div class="gpu-percentage" id="percent-22">0%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_21</div>
-                        <div class="gpu-status-box low" id="gpu-21">
-                            <div class="gpu-count" id="count-21">0</div>
-                            <div class="gpu-percentage" id="percent-21">0%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- Bottom Row: GPU_28, GPU_27, GPU_26, GPU_25 -->
-                <div class="col-md-3">
-                    <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_28</div>
-                        <div class="gpu-status-box low" id="gpu-28">
-                            <div class="gpu-count" id="count-28">0</div>
-                            <div class="gpu-percentage" id="percent-28">0%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_27</div>
-                        <div class="gpu-status-box low" id="gpu-27">
-                            <div class="gpu-count" id="count-27">0</div>
-                            <div class="gpu-percentage" id="percent-27">0%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_26</div>
-                        <div class="gpu-status-box low" id="gpu-26">
-                            <div class="gpu-count" id="count-26">0</div>
-                            <div class="gpu-percentage" id="percent-26">0%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="gpu-status-container">
-                        <div class="gpu-label">GPU_25</div>
-                        <div class="gpu-status-box low" id="gpu-25">
-                            <div class="gpu-count" id="count-25">0</div>
-                            <div class="gpu-percentage" id="percent-25">0%</div>
+                        <div class="gpu-label">Cluster 2 (10.4.21.x)</div>
+                        <div class="gpu-status-box low" id="cluster-C2">
+                            <div class="gpu-count" id="count-C2">0</div>
+                            <div class="gpu-percentage" id="percent-C2">0%</div>
+                            <div class="gpu-subtitle">127 Nodes • 1016 GPUs</div>
                         </div>
                     </div>
                 </div>
@@ -422,14 +373,24 @@
         
         // GPU configuration - will be updated based on selected site
         let GPU_CONFIG = {
-            '24': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 24 - Cluster 1', gpu_count: 8 },
-            '23': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 23 - Cluster 1', gpu_count: 8 },
-            '22': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 22 - Cluster 1', gpu_count: 8 },
-            '21': { cluster: 'C1', subnet: '10.4.11.*', ip_range: '10.4.11.1-127', description: 'GPU Node 21 - Cluster 1', gpu_count: 8 },
-            '28': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 28 - Cluster 2', gpu_count: 8 },
-            '27': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 27 - Cluster 2', gpu_count: 8 },
-            '26': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 26 - Cluster 2', gpu_count: 8 },
-            '25': { cluster: 'C2', subnet: '10.4.21.*', ip_range: '10.4.21.1-127', description: 'GPU Node 25 - Cluster 2', gpu_count: 8 }
+            // Cluster 1: 10.4.11.x subnet (127 nodes, 1016 GPUs)
+            'C1': { 
+                cluster: 'Cluster 1', 
+                subnet: '10.4.11.*', 
+                ip_range: '10.4.11.1-127', 
+                description: 'Cluster 1 - 127 GPU Nodes', 
+                node_count: 127,
+                gpu_count: 1016 
+            },
+            // Cluster 2: 10.4.21.x subnet (127 nodes, 1016 GPUs)
+            'C2': { 
+                cluster: 'Cluster 2', 
+                subnet: '10.4.21.*', 
+                ip_range: '10.4.21.1-127', 
+                description: 'Cluster 2 - 127 GPU Nodes', 
+                node_count: 127,
+                gpu_count: 1016 
+            }
         };
         
         // Function to change site
@@ -614,54 +575,78 @@
             // Log the throttle rate calculation
             console.log('Throttle rate calculation:', finalThrottledCount, '/', totalGPUs, '=', throttleRate + '%');
             
-                    // Update each GPU status box
-        GPU_IDS.forEach(gpuId => {
-            const count = gpuCounts[gpuId] || 0;
-            // Calculate percentage: unique events for this GPU ID / total unique events
-            const percentage = totalThrottled > 0 ? ((count / totalThrottled) * 100).toFixed(1) : 0;
-            
-            // Update count and percentage
-            document.getElementById(`count-${gpuId}`).textContent = count;
-            document.getElementById(`percent-${gpuId}`).textContent = percentage + '%';
-            
-            // Update status box color based on percentage using dynamic gradient
-            const statusBox = document.getElementById(`gpu-${gpuId}`);
-            statusBox.className = 'gpu-status-box';
-            
-            // Remove old color classes
-            statusBox.classList.remove('low', 'medium', 'high');
-            
-            if (count === 0) {
-                // Dark Green for 0% (no throttling)
-                statusBox.style.background = 'linear-gradient(135deg, #008000 0%, #008000 100%)';
-            } else {
-                // Dynamic gradient using your hex color codes
-                const percentValue = parseFloat(percentage);
-                let color;
-                
-                if (percentValue === 0) {
-                    // 0%: Dark Green
-                    color = '#008000';
-                } else if (percentValue <= 3) {
-                    // 1-3%: Lime Green
-                    color = '#c0e000';
-                } else if (percentValue <= 7) {
-                    // 3-7%: Yellow
-                    color = '#ffd100';
-                } else if (percentValue <= 10) {
-                    // 7-10%: Orange
-                    color = '#ff7a00';
-                } else if (percentValue <= 15) {
-                    // 10-15%: Darker Orange
-                    color = '#FF8C00';
-                } else {
-                    // >15%: Red
-                    color = '#ff0000';
-                }
-                
-                statusBox.style.background = `linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 20)} 100%)`;
-            }
-        });
+                    // Update each cluster status box
+                    Object.keys(GPU_CONFIG).forEach(clusterId => {
+                        const clusterConfig = GPU_CONFIG[clusterId];
+                        const clusterAlerts = throttledAlerts.filter(alert => {
+                            // Filter alerts for this specific cluster
+                            const ip = alert.device;
+                            if (clusterId === 'C1' && ip.startsWith('10.4.11.')) return true;
+                            if (clusterId === 'C2' && ip.startsWith('10.4.21.')) return true;
+                            return false;
+                        });
+                        
+                        // Count unique throttled GPUs in this cluster
+                        const uniqueClusterEvents = new Map();
+                        clusterAlerts.forEach(alert => {
+                            if (alert.device && alert.gpu_id) {
+                                const uniqueKey = `${alert.device}_${alert.gpu_id}`;
+                                if (!uniqueClusterEvents.has(uniqueKey)) {
+                                    uniqueClusterEvents.set(uniqueKey, alert);
+                                }
+                            }
+                        });
+                        
+                        const clusterThrottledCount = uniqueClusterEvents.size;
+                        const clusterTotalGPUs = clusterConfig.gpu_count;
+                        
+                        // Calculate percentage: throttled GPUs in cluster / total GPUs in cluster
+                        const percentage = clusterTotalGPUs > 0 ? ((clusterThrottledCount / clusterTotalGPUs) * 100).toFixed(1) : 0;
+                        
+                        // Update count and percentage
+                        document.getElementById(`count-${clusterId}`).textContent = clusterThrottledCount;
+                        document.getElementById(`percent-${clusterId}`).textContent = percentage + '%';
+                        
+                        // Update status box color based on percentage
+                        const statusBox = document.getElementById(`cluster-${clusterId}`);
+                        statusBox.className = 'gpu-status-box';
+                        
+                        // Remove old color classes
+                        statusBox.classList.remove('low', 'medium', 'high');
+                        
+                        if (clusterThrottledCount === 0) {
+                            // Dark Green for 0% (no throttling)
+                            statusBox.style.background = 'linear-gradient(135deg, #008000 0%, #008000 100%)';
+                        } else {
+                            // Dynamic gradient based on percentage
+                            const percentValue = parseFloat(percentage);
+                            let color;
+                            
+                            if (percentValue === 0) {
+                                // 0%: Dark Green
+                                color = '#008000';
+                            } else if (percentValue <= 3) {
+                                // 1-3%: Lime Green
+                                color = '#c0e000';
+                            } else if (percentValue <= 7) {
+                                // 3-7%: Yellow
+                                color = '#ffd100';
+                            } else if (percentValue <= 10) {
+                                // 7-10%: Orange
+                                color = '#ff7a00';
+                            } else if (percentValue <= 15) {
+                                // 10-15%: Darker Orange
+                                color = '#FF8C00';
+                            } else {
+                                // >15%: Red
+                                color = '#ff0000';
+                            }
+                            
+                            statusBox.style.background = `linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 20)} 100%)`;
+                        }
+                        
+                        console.log(`Cluster ${clusterId}: ${clusterThrottledCount} throttled GPUs out of ${clusterTotalGPUs} total GPUs (${percentage}%)`);
+                    });
         }
         
         // Update timestamp
