@@ -128,6 +128,9 @@ SITES = {
 
 DEFAULT_SITE = "DFW2"
 
+# Get HTTPS port from environment or use default
+HTTPS_PORT = os.environ.get('FLASK_PORT', '8443')
+
 def login_required(f):
     """Decorator to require login for protected routes"""
     def decorated_function(*args, **kwargs):
@@ -137,9 +140,42 @@ def login_required(f):
     decorated_function.__name__ = f.__name__
     return decorated_function
 
+def redirect_to_https_if_needed():
+    """Helper function to redirect HTTP to HTTPS if needed"""
+    # Check if this is an HTTP request (not HTTPS)
+    if request.scheme == 'http':
+        # Get the current host from the request
+        host = request.host.split(':')[0]  # Remove port if present
+        
+        # Redirect to HTTPS with the same path
+        https_url = f"https://{host}:{HTTPS_PORT}{request.path}"
+        if request.query_string:
+            https_url += f"?{request.query_string.decode()}"
+        
+        return redirect(https_url, code=301)
+    return None
+
+@app.route('/')
+def root():
+    """Root path - redirect to home if logged in, otherwise to login"""
+    # Check if we need to redirect to HTTPS
+    redirect_response = redirect_to_https_if_needed()
+    if redirect_response:
+        return redirect_response
+    
+    if 'logged_in' in session:
+        return redirect(url_for('home'))
+    else:
+        return redirect(url_for('login'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Login page and authentication"""
+    # Check if we need to redirect to HTTPS
+    redirect_response = redirect_to_https_if_needed()
+    if redirect_response:
+        return redirect_response
+    
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -149,7 +185,7 @@ def login():
             session['username'] = username
             return redirect(url_for('home'))
         else:
-            return render_template('login.html', error='Invalid username or password')
+            return render_template('login.html', error='Invalid credentials')
     
     return render_template('login.html')
 
@@ -159,43 +195,44 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-@app.route('/')
+@app.route('/home')
 @login_required
 def home():
-    """Home page with cluster status dashboard"""
-    response = make_response(render_template('home.html', sites=SITES, default_site=DEFAULT_SITE))
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
+    """Main dashboard page"""
+    # Check if we need to redirect to HTTPS
+    redirect_response = redirect_to_https_if_needed()
+    if redirect_response:
+        return redirect_response
+    
+    return render_template('home.html', sites=SITES, default_site=DEFAULT_SITE)
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """Dashboard page (alias for home)"""
+    return redirect(url_for('home'))
 
 @app.route('/query')
 @login_required
-def index():
-    """Main dashboard page"""
-    # Set default dates (last 7 days)
-    end_date = datetime.now().strftime('%Y-%m-%d')
-    start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+def query_tool():
+    """Query tool page"""
+    # Check if we need to redirect to HTTPS
+    redirect_response = redirect_to_https_if_needed()
+    if redirect_response:
+        return redirect_response
     
-    response = make_response(render_template('index.html', 
-                         sites=SITES, 
-                         default_site=DEFAULT_SITE,
-                         start_date=start_date,
-                         end_date=end_date))
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
+    return render_template('index.html', sites=SITES, default_site=DEFAULT_SITE)
 
 @app.route('/analytics')
 @login_required
 def analytics():
-    """Analytics page with GPU throttling breakdown"""
-    response = make_response(render_template('analytics.html', sites=SITES, default_site=DEFAULT_SITE))
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
+    """Analytics page"""
+    # Check if we need to redirect to HTTPS
+    redirect_response = redirect_to_https_if_needed()
+    if redirect_response:
+        return redirect_response
+    
+    return render_template('analytics.html', sites=SITES, default_site=DEFAULT_SITE)
 
 @app.route('/test')
 @login_required

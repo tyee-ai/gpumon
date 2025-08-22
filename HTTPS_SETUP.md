@@ -36,10 +36,12 @@ This will create:
 docker-compose up --build -d
 ```
 
-### 3. **Access Your Application**
+### 3. Access Your Application
 
 - **HTTPS (Main)**: https://localhost:8443
-- **HTTP (Fallback)**: http://localhost:8090
+- **HTTP (Redirects)**: http://localhost:8090 → automatically redirects to HTTPS
+
+**Note**: HTTP requests on port 8090 will automatically redirect to HTTPS on port 8443 for enhanced security.
 
 ## 🔒 SSL Configuration
 
@@ -55,6 +57,21 @@ SSL_KEY=/app/ssl/key.pem
 
 # Port configuration
 FLASK_PORT=8443
+```
+
+### **HTTP to HTTPS Redirect**
+
+The application automatically redirects HTTP requests to HTTPS:
+
+- **Port 8090 (HTTP)**: Automatically redirects to HTTPS on port 8443
+- **Port 8443 (HTTPS)**: Main secure access point
+- **Redirect Type**: 301 (permanent) redirect for better SEO and caching
+
+**Example Redirect Flow:**
+```
+http://localhost:8090/ → https://localhost:8443/
+http://localhost:8090/query → https://localhost:8443/query
+http://localhost:8090/analytics → https://localhost:8443/analytics
 ```
 
 ### **Certificate Details**
@@ -100,15 +117,19 @@ docker-compose ps
 # Test HTTPS endpoint
 curl -k https://localhost:8443/
 
+# Test HTTP redirect (should redirect to HTTPS)
+curl -L http://localhost:8090/
+
 # Test HTTP fallback
 curl http://localhost:8090/
 ```
 
 ### **Browser Access**
 
-1. Navigate to https://localhost:8443
-2. Accept the self-signed certificate warning
-3. Your GPU Monitor is now running over HTTPS!
+1. Navigate to https://localhost:8443 (direct HTTPS access)
+2. Or navigate to http://localhost:8090 (will redirect to HTTPS)
+3. Accept the self-signed certificate warning
+4. Your GPU Monitor is now running over HTTPS!
 
 ## 🛠️ Customization
 

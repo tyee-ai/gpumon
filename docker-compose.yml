@@ -5,13 +5,13 @@ services:
     build: .
     container_name: gpumon-app
     ports:
-      - "8090:8090"
-      - "8443:8443"  # HTTPS port
+      - "8090:8090"      # HTTP port (redirects to HTTPS)
+      - "8443:8443"      # HTTPS port (main secure access)
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
       - FLASK_HOST=0.0.0.0
-      - FLASK_PORT=8443  # Use HTTPS port
+      - FLASK_PORT=8443  # HTTPS port
       - FLASK_SSL=true
       - SSL_CERT=/app/ssl/cert.pem
       - SSL_KEY=/app/ssl/key.pem
