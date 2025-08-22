@@ -825,7 +825,8 @@ def health_check():
 if __name__ == '__main__':
     # Get host and port from environment variables or use defaults
     host = os.environ.get('FLASK_HOST', '0.0.0.0')
-    port = int(os.environ.get('FLASK_PORT', 8090))
+    https_port = int(os.environ.get('FLASK_PORT', 8443))
+    http_port = int(os.environ.get('HTTP_PORT', 8090))
     debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     
     # SSL configuration
@@ -833,18 +834,32 @@ if __name__ == '__main__':
     ssl_cert = os.environ.get('SSL_CERT', '/app/ssl/cert.pem')
     ssl_key = os.environ.get('SSL_KEY', '/app/ssl/key.pem')
     
-    print(f"Starting GPU Monitor on {host}:{port}")
+    print(f"Starting GPU Monitor on {host}")
     print(f"Debug mode: {debug}")
     print(f"SSL enabled: {ssl_enabled}")
+    print(f"HTTPS port: {https_port}")
+    print(f"HTTP port: {http_port}")
     
     if ssl_enabled:
         # Check if SSL certificates exist
         if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
             print(f"Using SSL certificates: {ssl_cert}, {ssl_key}")
-            app.run(host=host, port=port, debug=debug, ssl_context=(ssl_cert, ssl_key))
+            
+            # Start HTTPS server in a separate thread
+            import threading
+            def run_https():
+                app.run(host=host, port=https_port, debug=False, ssl_context=(ssl_cert, ssl_key))
+            
+            https_thread = threading.Thread(target=run_https, daemon=True)
+            https_thread.start()
+            print(f"HTTPS server started on port {https_port}")
+            
+            # Start HTTP server on main thread (for redirects)
+            print(f"HTTP server starting on port {http_port}")
+            app.run(host=host, port=http_port, debug=debug)
         else:
             print(f"SSL enabled but certificates not found at {ssl_cert}, {ssl_key}")
             print("Falling back to HTTP mode")
-            app.run(host=host, port=port, debug=debug)
+            app.run(host=host, port=http_port, debug=debug)
     else:
-        app.run(host=host, port=port, debug=debug)
+        app.run(host=host, port=http_port, debug=debug)

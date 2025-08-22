@@ -12,6 +12,7 @@ services:
       - FLASK_DEBUG=0
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=8443  # HTTPS port
+      - HTTP_PORT=8090   # HTTP port for redirects
       - FLASK_SSL=true
       - SSL_CERT=/app/ssl/cert.pem
       - SSL_KEY=/app/ssl/key.pem
