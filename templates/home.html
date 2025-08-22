@@ -316,12 +316,15 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="dashboard-header">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12 text-center">
-                        <h1 class="display-4 mb-3">GPU Cluster Status Dashboard</h1>
-                        <p class="lead mb-0">Real-time monitoring of GPU thermal throttling across all clusters</p>
-                    </div>
+            <h1><i class="fas fa-tachometer-alt"></i> GPU Monitor Dashboard</h1>
+            <div class="dashboard-controls">
+                <button class="btn btn-primary" onclick="manualRefresh()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+                <div class="dashboard-info">
+                    <small>Last Updated: <span id="lastUpdate">Never</span></small>
+                    <br>
+                    <small>Last Poll: <span id="lastPoll">Never</span></small>
                 </div>
             </div>
         </div>
@@ -503,22 +506,53 @@
                 const startDateStr = startDate.toISOString().split('T')[0];
                 const endDateStr = endDate.toISOString().split('T')[0];
                 
+                console.log(`🔍 Checking cluster ${cluster} for dates: ${startDateStr} to ${endDateStr}`);
+                
                 const response = await fetch(`/api/analysis?site=${currentSite}&start_date=${startDateStr}&end_date=${endDateStr}&alert_type=throttled`);
                 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log(`📊 Cluster ${cluster} API response:`, data);
+                    
                     if (data.success) {
                         processClusterData(cluster, data.results);
+                    } else {
+                        console.warn(`⚠️ Cluster ${cluster} API returned success: false`);
                     }
+                } else {
+                    console.error(`❌ Cluster ${cluster} API error: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.error(`Error checking cluster ${cluster}:`, error);
+                console.error(`❌ Error checking cluster ${cluster}:`, error);
             }
+        }
+        
+        // Manual refresh function for debugging
+        function manualRefresh() {
+            console.log('🔄 Manual refresh triggered');
+            const refreshBtn = document.querySelector('button[onclick="manualRefresh()"]');
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            refreshBtn.disabled = true;
+            
+            // Force refresh all clusters
+            checkAllClustersInitial().then(() => {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
+                refreshBtn.disabled = false;
+                console.log('✅ Manual refresh completed');
+            }).catch(error => {
+                console.error('❌ Manual refresh failed:', error);
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
+                refreshBtn.disabled = false;
+            });
         }
         
         // Process cluster data and update status
         function processClusterData(cluster, results) {
+            console.log(`🔄 Processing data for cluster ${cluster}:`, results);
+            
             const throttledAlerts = results.throttled || [];
+            console.log(`📊 Total throttled alerts: ${throttledAlerts.length}`);
+            
             const clusterAlerts = throttledAlerts.filter(alert => {
                 // Filter alerts for this specific cluster
                 const ip = alert.device;
@@ -527,11 +561,18 @@
                 return false;
             });
             
+            console.log(`🎯 Cluster ${cluster} filtered alerts: ${clusterAlerts.length}`);
+            if (clusterAlerts.length > 0) {
+                console.log(`📋 Sample alerts for cluster ${cluster}:`, clusterAlerts.slice(0, 3));
+            }
+            
             const statusBox = document.getElementById(`status-${cluster}`);
             const alertsContainer = document.getElementById(`alerts-${cluster}`);
             
             if (clusterAlerts.length > 0) {
                 // GPUs are throttling
+                console.log(`🚨 Cluster ${cluster} has throttling events!`);
+                
                 if (!clusterStatus[cluster].isThrottling) {
                     // New throttling event - start blinking
                     startBlinking(cluster, statusBox);
@@ -544,6 +585,7 @@
                 clusterStatus[cluster].alerts = clusterAlerts;
             } else {
                 // No throttling - ensure healthy status
+                console.log(`✅ Cluster ${cluster} is healthy (no throttling)`);
                 stopBlinking(cluster);
                 statusBox.className = 'status-box healthy';
                 statusBox.innerHTML = '<div class="status-text">HEALTHY</div>';
