@@ -666,24 +666,35 @@ def parse_analysis_output(output, alert_type):
                 # Parse table format: "10.4.11.36      GPU_25     90.7°C     2025-03-24 00:00:00"
                 parts = line.split()
                 if len(parts) >= 4:
-                    device = parts[0]
-                    gpu_id = parts[1]
-                    temp = parts[2].replace('°C', '').replace('\u00b0C', '').replace('\u00b0', '').replace('°', '')
-                    timestamp = parts[3] + ' ' + parts[4]
-                    site, cluster = get_site_and_cluster(device)
-                    
-                    # Debug: Log the parsed timestamp format
-                    print(f"Debug: Parsed throttled alert - Device: {device}, GPU: {gpu_id}, Temp: {temp}, Timestamp: '{timestamp}'")
-                    
-                    results['throttled'].append({
-                        'timestamp': timestamp,
-                        'device': device,
-                        'gpu_id': gpu_id,
-                        'temp': float(temp),
-                        'type': 'Throttled',
-                        'site': site,
-                        'cluster': cluster
-                    })
+                    try:
+                        device = parts[0]
+                        gpu_id = parts[1]
+                        temp_str = parts[2].replace('°C', '').replace('\u00b0C', '').replace('\u00b0', '').replace('°', '')
+                        
+                        # Validate that temp_str is actually a number
+                        if not temp_str.replace('.', '').replace('-', '').isdigit():
+                            print(f"Debug: Skipping line with invalid temperature format: '{line}' (temp: '{temp_str}')")
+                            continue
+                        
+                        temp = float(temp_str)
+                        timestamp = parts[3] + ' ' + parts[4]
+                        site, cluster = get_site_and_cluster(device)
+                        
+                        # Debug: Log the parsed timestamp format
+                        print(f"Debug: Parsed throttled alert - Device: {device}, GPU: {gpu_id}, Temp: {temp}, Timestamp: '{timestamp}'")
+                        
+                        results['throttled'].append({
+                            'timestamp': timestamp,
+                            'device': device,
+                            'gpu_id': gpu_id,
+                            'temp': temp,
+                            'type': 'Throttled',
+                            'site': site,
+                            'cluster': cluster
+                        })
+                    except (ValueError, IndexError) as e:
+                        print(f"Debug: Failed to parse throttled line '{line}': {e}")
+                        continue
         
         # Parse thermally failed GPUs
         elif current_section == 'thermally_failed' and line and not line.startswith('---') and not line.startswith('IP Address') and not line.startswith('GPU') and not line.startswith('Temperature') and not line.startswith('Date/Time'):
@@ -691,26 +702,37 @@ def parse_analysis_output(output, alert_type):
                 # Parse table format: "10.4.11.36      GPU_25     90.7°C     2025-03-24 00:00:00"
                 parts = line.split()
                 if len(parts) >= 4:
-                    device = parts[0]
-                    gpu_id = parts[1]
-                    temp = parts[2].replace('°C', '').replace('\u00b0C', '').replace('\u00b0', '').replace('°', '')
-                    timestamp = parts[3] + ' ' + parts[4]
-                    
-                    # For thermally failed alerts, we need to get the average temp from the data
-                    # Since the full output doesn't include avg_temp in the table, we'll set it to N/A
-                    avg_temp = None
-                    
-                    site, cluster = get_site_and_cluster(device)
-                    results['thermally_failed'].append({
-                        'timestamp': timestamp,
-                        'device': device,
-                        'gpu_id': gpu_id,
-                        'temp': float(temp),
-                        'avg_temp': avg_temp,
-                        'type': 'Thermally Failed',
-                        'site': site,
-                        'cluster': cluster
-                    })
+                    try:
+                        device = parts[0]
+                        gpu_id = parts[1]
+                        temp_str = parts[2].replace('°C', '').replace('\u00b0C', '').replace('\u00b0', '').replace('°', '')
+                        
+                        # Validate that temp_str is actually a number
+                        if not temp_str.replace('.', '').replace('-', '').isdigit():
+                            print(f"Debug: Skipping thermally failed line with invalid temperature format: '{line}' (temp: '{temp_str}')")
+                            continue
+                        
+                        temp = float(temp_str)
+                        timestamp = parts[3] + ' ' + parts[4]
+                        
+                        # For thermally failed alerts, we need to get the average temp from the data
+                        # Since the full output doesn't include avg_temp in the table, we'll set it to N/A
+                        avg_temp = None
+                        
+                        site, cluster = get_site_and_cluster(device)
+                        results['thermally_failed'].append({
+                            'timestamp': timestamp,
+                            'device': device,
+                            'gpu_id': gpu_id,
+                            'temp': temp,
+                            'avg_temp': avg_temp,
+                            'type': 'Thermally Failed',
+                            'site': site,
+                            'cluster': cluster
+                        })
+                    except (ValueError, IndexError) as e:
+                        print(f"Debug: Failed to parse thermally failed line '{line}': {e}")
+                        continue
         
     
 
