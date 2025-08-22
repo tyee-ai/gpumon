@@ -143,18 +143,8 @@ def login_required(f):
 
 def redirect_to_https_if_needed():
     """Helper function to redirect HTTP to HTTPS if needed"""
-    # Debug: Log request details
-    print(f"🔍 Redirect check - Scheme: {request.scheme}, Port: {request.environ.get('SERVER_PORT')}, URL: {request.url}")
-    
-    # Check if this is an HTTP request (not HTTPS) or if we're on the HTTP port
-    current_port = request.environ.get('SERVER_PORT', 'unknown')
-    is_http_port = current_port == str(HTTP_PORT)
-    is_http_scheme = request.scheme == 'http'
-    
-    print(f"🔍 Port check: {current_port} == {HTTP_PORT} = {is_http_port}")
-    print(f"🔍 Scheme check: {request.scheme} == 'http' = {is_http_scheme}")
-    
-    if is_http_scheme or is_http_port:
+    # Simple check: if this is an HTTP request, redirect to HTTPS
+    if request.scheme == 'http':
         # Get the current host from the request
         host = request.host.split(':')[0]  # Remove port if present
         
@@ -166,7 +156,6 @@ def redirect_to_https_if_needed():
         print(f"🔄 Redirecting HTTP request to HTTPS: {request.url} -> {https_url}")
         return redirect(https_url, code=301)
     
-    print(f"✅ No redirect needed - staying on HTTPS")
     return None
 
 @app.route('/')
