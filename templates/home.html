@@ -498,14 +498,17 @@
         // Check a specific cluster
         async function checkCluster(cluster) {
             try {
-                // Get current date range (last 24 hours)
-                const endDate = new Date();
-                const startDate = new Date(endDate.getTime() - (24 * 60 * 60 * 1000));
+                // Get current date range (current day from 00:00 to 23:59)
+                const now = new Date();
+                const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1); // Tomorrow 00:00
+                const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Today 00:00
                 
                 // Format dates as YYYY-MM-DD for the API
                 const startDateStr = startDate.toISOString().split('T')[0];
                 const endDateStr = endDate.toISOString().split('T')[0];
                 
+                // Clear logging of date range being queried
+                console.log(`📊 Dashboard querying date range: ${startDateStr} to ${endDateStr}`);
                 console.log(`🔍 Checking cluster ${cluster} for dates: ${startDateStr} to ${endDateStr}`);
                 
                 const response = await fetch(`/api/analysis?site=${currentSite}&start_date=${startDateStr}&end_date=${endDateStr}&alert_type=throttled`);
