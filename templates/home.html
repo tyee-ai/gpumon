@@ -559,8 +559,8 @@
             const clusterAlerts = throttledAlerts.filter(alert => {
                 // Filter alerts for this specific cluster
                 const ip = alert.device;
-                if (cluster === 'C1' && ip.startsWith('10.4.11.')) return true;
-                if (cluster === 'C2' && ip.startsWith('10.4.21.')) return true;
+                if (cluster === 'Cluster 1' && ip.startsWith('10.4.11.')) return true;
+                if (cluster === 'Cluster 2' && ip.startsWith('10.4.21.')) return true;
                 return false;
             });
             
