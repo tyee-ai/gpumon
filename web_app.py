@@ -130,6 +130,7 @@ DEFAULT_SITE = "DFW2"
 
 # Get HTTPS port from environment or use default
 HTTPS_PORT = os.environ.get('FLASK_PORT', '8443')
+HTTP_PORT = os.environ.get('HTTP_PORT', '8090')
 
 def login_required(f):
     """Decorator to require login for protected routes"""
@@ -142,8 +143,18 @@ def login_required(f):
 
 def redirect_to_https_if_needed():
     """Helper function to redirect HTTP to HTTPS if needed"""
-    # Check if this is an HTTP request (not HTTPS)
-    if request.scheme == 'http':
+    # Debug: Log request details
+    print(f"🔍 Redirect check - Scheme: {request.scheme}, Port: {request.environ.get('SERVER_PORT')}, URL: {request.url}")
+    
+    # Check if this is an HTTP request (not HTTPS) or if we're on the HTTP port
+    current_port = request.environ.get('SERVER_PORT', 'unknown')
+    is_http_port = current_port == str(HTTP_PORT)
+    is_http_scheme = request.scheme == 'http'
+    
+    print(f"🔍 Port check: {current_port} == {HTTP_PORT} = {is_http_port}")
+    print(f"🔍 Scheme check: {request.scheme} == 'http' = {is_http_scheme}")
+    
+    if is_http_scheme or is_http_port:
         # Get the current host from the request
         host = request.host.split(':')[0]  # Remove port if present
         
@@ -152,7 +163,10 @@ def redirect_to_https_if_needed():
         if request.query_string:
             https_url += f"?{request.query_string.decode()}"
         
+        print(f"🔄 Redirecting HTTP request to HTTPS: {request.url} -> {https_url}")
         return redirect(https_url, code=301)
+    
+    print(f"✅ No redirect needed - staying on HTTPS")
     return None
 
 @app.route('/')
