@@ -848,9 +848,18 @@ if __name__ == '__main__':
         if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
             print(f"Using SSL certificates: {ssl_cert}, {ssl_key}")
             
-            # Start HTTPS server on the main port
-            print(f"Starting HTTPS server on port {https_port}")
-            app.run(host=host, port=https_port, debug=debug, ssl_context=(ssl_cert, ssl_key))
+            # Start HTTPS server in a separate thread
+            import threading
+            def run_https():
+                app.run(host=host, port=https_port, debug=False, ssl_context=(ssl_cert, ssl_key))
+            
+            https_thread = threading.Thread(target=run_https, daemon=True)
+            https_thread.start()
+            print(f"HTTPS server started on port {https_port}")
+            
+            # Start HTTP server on main thread (for redirects)
+            print(f"HTTP server starting on port {http_port}")
+            app.run(host=host, port=http_port, debug=debug)
         else:
             print(f"SSL enabled but certificates not found at {ssl_cert}, {ssl_key}")
             print("Falling back to HTTP mode")
