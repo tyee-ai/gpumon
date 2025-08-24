@@ -9,27 +9,49 @@ import subprocess
 import json
 from datetime import datetime, timedelta
 def get_site_and_cluster(ip_address):
-    """Determine site and cluster based on IP address"""
+    """Determine site and cluster based on IP address for all sites"""
     try:
         ip_obj = ipaddress.ip_address(ip_address)
-        # Handle 10.4.x.x range
-        if str(ip_obj).startswith("10.4."):
-            # Extract cluster from third octet and map to C1/C2
-            octets = str(ip_obj).split('.')
-            if len(octets) >= 3:
-                third_octet = octets[2]
-                # Map 11.x.x to C1, 21.x.x to C2
-                if third_octet == "11":
-                    cluster = "C1"
-                elif third_octet == "21":
-                    cluster = "C2"
-                else:
-                    cluster = f"C{third_octet}"  # Fallback for other octets
-                return "DFW2", cluster
-            else:
-                return "DFW2", "Unknown"
-        else:
+        ip_str = str(ip_obj)
+        
+        # Check each site's IP ranges
+        for site_name, site_config in SITES.items():
+            for cluster_name, cluster_config in site_config.get('clusters', {}).items():
+                ip_range = cluster_config.get('ip_range', '')
+                if ip_range:
+                    # Parse IP range (e.g., "10.19.11.1-127")
+                    if '-' in ip_range:
+                        start_ip, end_ip = ip_range.split('-')
+                        start_octets = start_ip.split('.')
+                        end_octets = end_ip.split('.')
+                        
+                        # Check if IP matches this range
+                        if (len(start_octets) >= 3 and len(end_octets) >= 3 and
+                            ip_str.startswith(f"{start_octets[0]}.{start_octets[1]}.{start_octets[2]}.")):
+                            
+                            # Extract the last octet and check if it's in range
+                            try:
+                                ip_last_octet = int(ip_str.split('.')[-1])
+                                start_last_octet = int(start_octets[-1])
+                                end_last_octet = int(end_octets[-1])
+                                
+                                if start_last_octet <= ip_last_octet <= end_last_octet:
+                                    return site_name, cluster_name
+                            except ValueError:
+                                continue
+        
+        # Fallback: check subnet patterns
+        if ip_str.startswith("10.4."):
             return "DFW2", "Unknown"
+        elif ip_str.startswith("10.19."):
+            return "DFW1", "Unknown"
+        elif ip_str.startswith("10.14."):
+            return "IAD1", "Unknown"
+        elif ip_str.startswith("10.9."):
+            return "SEA1", "Unknown"
+        else:
+            return "Unknown", "Unknown"
+            
     except ValueError:
         return "Unknown", "Unknown"
 
@@ -60,14 +82,71 @@ CREDENTIALS = {
 
 # Configuration
 SITES = {
+    "DFW1": {
+        "name": "DFW1 - Allen, TX",
+        "subnet": "10.19",
+        "description": "Dallas-Fort Worth Data Center 1 - Allen, TX",
+        "nodes": 508,
+        "gpus_per_node": 8,
+        "total_gpus": 4064,
+        "rrd_path": "/rrd/vp-backup/backups/observium/opt/docker/volumes/docker-observium_config/_data/rrd/",
+        "clusters": {
+            "Cluster 1": {"ip_range": "10.19.11.1-127"},
+            "Cluster 2": {"ip_range": "10.19.21.1-127"},
+            "Cluster 3": {"ip_range": "10.19.31.1-127"},
+            "Cluster 4": {"ip_range": "10.19.41.1-127"}
+        }
+    },
     "DFW2": {
-        "name": "DFW2",
+        "name": "DFW2 - Dallas-Fort Worth 2",
         "subnet": "10.4",
-        "description": "Dallas-Fort Worth Data Center 2"
+        "description": "Dallas-Fort Worth Data Center 2",
+        "nodes": 254,
+        "gpus_per_node": 8,
+        "total_gpus": 2032,
+        "rrd_path": "/opt/docker/volumes/docker-observium_config/_data/rrd/",
+        "clusters": {
+            "Cluster 1": {"ip_range": "10.4.11.1-127"},
+            "Cluster 2": {"ip_range": "10.4.21.1-127"}
+        }
+    },
+    "IAD1": {
+        "name": "IAD1 - Sterling, VA",
+        "subnet": "10.14",
+        "description": "Washington DC Area Data Center 1 - Sterling, VA",
+        "nodes": 508,
+        "gpus_per_node": 8,
+        "total_gpus": 4064,
+        "rrd_path": "/opt/docker/volumes/ce6610072ec75cc34f7d4e362f935736e47de7c0d59344d518393aa288805333/_data/rrd",
+        "clusters": {
+            "Cluster 1": {"ip_range": "10.14.11.1-127"},
+            "Cluster 2": {"ip_range": "10.14.21.1-127"},
+            "Cluster 3": {"ip_range": "10.14.31.1-127"},
+            "Cluster 4": {"ip_range": "10.14.41.1-127"}
+        }
+    },
+    "SEA1": {
+        "name": "SEA1 - Puyallup, WA",
+        "subnet": "10.9",
+        "description": "Seattle Area Data Center 1 - Puyallup, WA",
+        "nodes": 1016,
+        "gpus_per_node": 8,
+        "total_gpus": 8128,
+        "rrd_path": "/mnt/netops/observability/observium/config/rrd/",
+        "clusters": {
+            "Cluster 1": {"ip_range": "10.9.11.1-127"},
+            "Cluster 2": {"ip_range": "10.9.21.1-127"},
+            "Cluster 3": {"ip_range": "10.9.31.1-127"},
+            "Cluster 4": {"ip_range": "10.9.41.1-127"},
+            "Cluster 5": {"ip_range": "10.9.51.1-128"},
+            "Cluster 6": {"ip_range": "10.9.61.1-128"},
+            "Cluster 7": {"ip_range": "10.9.71.1-129"},
+            "Cluster 8": {"ip_range": "10.9.81.1-129"}
+        }
     }
 }
 
-DEFAULT_SITE = "DFW2"
+DEFAULT_SITE = "DFW1"
 
 def login_required(f):
     """Decorator to require login for protected routes"""
@@ -104,7 +183,7 @@ def logout():
 @login_required
 def home():
     """Home page with cluster status dashboard"""
-    response = make_response(render_template('home.html'))
+    response = make_response(render_template('home.html', sites=SITES, default_site=DEFAULT_SITE))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -132,7 +211,7 @@ def index():
 @login_required
 def analytics():
     """Analytics page with GPU throttling breakdown"""
-    response = make_response(render_template('analytics.html'))
+    response = make_response(render_template('analytics.html', sites=SITES, default_site=DEFAULT_SITE))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -165,28 +244,33 @@ def run_analysis():
         site_config = SITES[site]
         site_id = site_config['subnet'].split('.')[1]  # Extract "4" from "10.4"
         
-        # Build command for gpu_monitor.py
-        # Try multiple possible RRD paths for different deployment scenarios
-        possible_rrd_paths = [
-            os.environ.get("RRD_BASE_PATH"),  # Environment variable
-            "/app/data",  # Docker container path (mounted volume)
-            "/opt/docker/volumes/docker-observium_config/_data/rrd",  # Docker volume path
-            "/app/rrd_data",  # Container path
-            "/home/drew/src/gpumon/rrd_data",  # Local development path
-            "/tmp/rrd_data"  # Fallback path
-        ]
-        
-        rrd_base_path = None
-        for path in possible_rrd_paths:
-            if path and os.path.exists(path):
-                rrd_base_path = path
-                print(f"Debug: Using RRD path: {rrd_base_path}")
-                break
-        
-        if not rrd_base_path:
-            # If no path exists, use the first one and let it fail gracefully
-            rrd_base_path = possible_rrd_paths[0] or "/tmp/rrd_data"
-            print(f"Debug: No RRD path found, using: {rrd_base_path}")
+        # Use site-specific RRD path if available, otherwise fall back to environment variable
+        site_rrd_path = site_config.get('rrd_path')
+        if site_rrd_path and os.path.exists(site_rrd_path):
+            rrd_base_path = site_rrd_path
+            print(f"Debug: Using site-specific RRD path: {rrd_base_path}")
+        else:
+            # Fall back to environment variable or default paths
+            possible_rrd_paths = [
+                os.environ.get("RRD_BASE_PATH"),  # Environment variable
+                "/app/data",  # Docker container path (mounted volume)
+                "/opt/docker/volumes/docker-observium_config/_data/rrd",  # Docker volume path
+                "/app/rrd_data",  # Container path
+                "/home/drew/src/gpumon/rrd_data",  # Local development path
+                "/tmp/rrd_data"  # Fallback path
+            ]
+            
+            rrd_base_path = None
+            for path in possible_rrd_paths:
+                if path and os.path.exists(path):
+                    rrd_base_path = path
+                    print(f"Debug: Using fallback RRD path: {rrd_base_path}")
+                    break
+            
+            if not rrd_base_path:
+                # If no path exists, use the first one and let it fail gracefully
+                rrd_base_path = possible_rrd_paths[0] or "/tmp/rrd_data"
+                print(f"Debug: No RRD path found, using: {rrd_base_path}")
         
         cmd = [
             'python3', 'gpu_monitor.py',
@@ -213,9 +297,9 @@ def run_analysis():
             # Return fallback data instead of error for better user experience
             fallback_results = {
                 'summary': {
-                    'total_devices': 253,
-                    'planned_gpu_nodes': 254,
-                    'planned_total_gpus': 2032,
+                    'total_devices': site_config.get('nodes', 0) - 1,  # Subtract 1 for typical network overhead
+                    'planned_gpu_nodes': site_config.get('nodes', 0),
+                    'planned_total_gpus': site_config.get('total_gpus', 0),
                     'throttled_count': 0,
                     'suspicious_count': 0,
                     'normal_count': 'N/A',
