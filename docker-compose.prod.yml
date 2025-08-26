@@ -6,8 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: gpumon-app-prod
-    ports:
-      - "8090:8090"
+    # No external ports - only accessible through nginx
+    expose:
+      - "8090"
     user: "1000:1000"  # Non-root user for security
     environment:
       - FLASK_ENV=production
