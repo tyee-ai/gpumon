@@ -327,6 +327,20 @@
         </div>
 
     <div class="container">
+        <!-- Site Selection -->
+        <div class="row mb-4">
+            <div class="col-md-6 mx-auto">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <label for="siteSelect" class="form-label fw-bold">Select Data Center Site:</label>
+                        <select class="form-select form-select-lg" id="siteSelect" style="max-width: 400px; margin: 0 auto;">
+                            <!-- Sites will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Real-time Clock and Poll Timer -->
         <div class="time-display">
                         <div class="current-time" id="currentTime">--:--:--</div>
@@ -347,7 +361,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Configuration
-        const CLUSTERS = ['C1', 'C2']; // Add more clusters as needed
+        let CLUSTERS = ['C1', 'C2']; // Will be updated based on selected site
         const QUERY_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
         const BLINK_DURATION = 10000; // 10 seconds in milliseconds
         
@@ -357,6 +371,67 @@
         // State management
         let clusterStatus = {};
         let blinkTimers = {};
+        let currentSite = 'DFW1';
+        
+        // Site configuration mapping
+        const SITE_CLUSTERS = {
+            'DFW1': ['C1', 'C2', 'C3', 'C4'],
+            'DFW2': ['C1', 'C2'],
+            'IAD1': ['C1', 'C2', 'C3', 'C4'],
+            'SEA1': ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8']
+        };
+        
+        // Populate site dropdown
+        async function populateSiteDropdown() {
+            try {
+                const response = await fetch('/api/sites');
+                const sites = await response.json();
+                
+                const siteSelect = document.getElementById('siteSelect');
+                siteSelect.innerHTML = ''; // Clear existing options
+                
+                // Add all sites
+                Object.entries(sites).forEach(([siteKey, siteData]) => {
+                    const option = document.createElement('option');
+                    option.value = siteKey;
+                    option.textContent = `${siteKey} - ${siteData.name} (${siteData.total_gpus} GPUs)`;
+                    siteSelect.appendChild(option);
+                });
+                
+                // Set default site and trigger change
+                siteSelect.value = currentSite;
+                onSiteChange();
+                
+            } catch (error) {
+                console.error('Error loading sites:', error);
+                // Fallback to hardcoded sites
+                const siteSelect = document.getElementById('siteSelect');
+                siteSelect.innerHTML = `
+                    <option value="DFW1">DFW1 - Allen, TX (4064 GPUs)</option>
+                    <option value="DFW2">DFW2 - Dallas-Fort Worth 2 (2032 GPUs)</option>
+                    <option value="IAD1">IAD1 - Sterling, VA (4064 GPUs)</option>
+                    <option value="SEA1">SEA1 - Puyallup, WA (8128 GPUs)</option>
+                `;
+                siteSelect.value = currentSite;
+                onSiteChange();
+            }
+        }
+        
+        // Handle site change
+        function onSiteChange() {
+            const siteSelect = document.getElementById('siteSelect');
+            currentSite = siteSelect.value;
+            
+            // Update clusters based on selected site
+            CLUSTERS = SITE_CLUSTERS[currentSite] || ['C1', 'C2'];
+            
+            // Clear existing cluster display
+            const container = document.getElementById('clusterStatus');
+            container.innerHTML = '';
+            
+            // Reinitialize dashboard with new clusters
+            initializeDashboard();
+        }
         
         // Initialize dashboard
         function initializeDashboard() {
@@ -597,7 +672,11 @@
         }
         
         // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initializeDashboard);
+        document.addEventListener('DOMContentLoaded', function() {
+            populateSiteDropdown();
+            // Add event listener for site changes
+            document.getElementById('siteSelect').addEventListener('change', onSiteChange);
+        });
     </script>
 </body>
 </html>

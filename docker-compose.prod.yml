@@ -1,33 +1,71 @@
+version: '3.8'
 
 services:
   gpumon:
     build:
       context: .
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: gpumon-app-prod
     ports:
       - "8090:8090"
+    user: "1000:1000"  # Non-root user for security
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=8090
       - RRD_DATA_PATH=/app/data
+      - TZ=UTC
     volumes:
-      # Mount RRD data directory if you have one
-      - /opt/docker/volumes/docker-observium_config/_data/rrd:/app/data:ro
+      # Mount RRD data directory
+      - /opt/gpumon/rrd_data:/app/data:ro
       # Mount logs directory
-      - ./logs:/app/logs
+      - /opt/gpumon/logs:/app/logs
+      # Mount SSL certificates (if using HTTPS)
+      - /opt/gpumon/ssl:/app/ssl:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - gpumon-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # Optional: Nginx reverse proxy for HTTPS
+  nginx:
+    image: nginx:alpine
+    container_name: gpumon-nginx
+    ports:
+      - "8090:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - /opt/gpumon/logs/nginx:/var/log/nginx
+    depends_on:
+      - gpumon
+    restart: unless-stopped
     networks:
       - gpumon-network
 
 networks:
   gpumon-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

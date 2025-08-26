@@ -5,6 +5,9 @@ let isAnalysisRunning = false;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - dashboard.js loaded successfully');
     
+    // Populate site dropdown first
+    populateSiteDropdown();
+    
     // Set default dates
     const today = new Date();
     const lastWeek = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
@@ -404,4 +407,62 @@ function showError(message) {
             errorAlert.remove();
         }
     }, 10000);
+}
+
+// Populate site dropdown with all available sites
+async function populateSiteDropdown() {
+    console.log('populateSiteDropdown called from dashboard.js');
+    try {
+        console.log('Fetching sites from /api/sites...');
+        const response = await fetch('/api/sites');
+        console.log('Response status:', response.status);
+        const sites = await response.json();
+        console.log('Sites received:', sites);
+        
+        const siteSelect = document.getElementById('site');
+        if (!siteSelect) {
+            console.error('Site select element not found!');
+            return;
+        }
+        
+        console.log('Clearing existing options...');
+        siteSelect.innerHTML = ''; // Clear existing options
+        
+        // Add default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select a site...';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        siteSelect.appendChild(defaultOption);
+        
+        // Add all sites
+        console.log('Adding site options...');
+        Object.entries(sites).forEach(([siteKey, siteData]) => {
+            const option = document.createElement('option');
+            option.value = siteKey;
+            option.textContent = `${siteKey} - ${siteData.name}`;
+            siteSelect.appendChild(option);
+            console.log('Added option:', siteKey, siteData.name);
+        });
+        
+        // Set default site to DFW1
+        siteSelect.value = 'DFW1';
+        console.log('Site dropdown populated successfully');
+        
+    } catch (error) {
+        console.error('Error loading sites:', error);
+        // Fallback to hardcoded sites if API fails
+        const siteSelect = document.getElementById('site');
+        if (siteSelect) {
+            siteSelect.innerHTML = `
+                <option value="DFW1">DFW1 - Allen, TX</option>
+                <option value="DFW2">DFW2 - Dallas-Fort Worth 2</option>
+                <option value="IAD1">IAD1 - Sterling, VA</option>
+                <option value="SEA1">SEA1 - Puyallup, WA</option>
+            `;
+            siteSelect.value = 'DFW1';
+            console.log('Fallback sites loaded');
+        }
+    }
 }
