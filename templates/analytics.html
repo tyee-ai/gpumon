@@ -157,6 +157,30 @@
             font-size: 0.85rem;
         }
 
+        .nav-sidebar .version-info {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 0 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .nav-sidebar .version-info .version-text {
+            color: #95a5a6;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .nav-sidebar .version-info .version-number {
+            color: #3498db;
+            font-weight: 600;
+        }
+
         .nav-sidebar .nav-menu {
             padding: 1rem 0;
         }
@@ -243,6 +267,11 @@
                 </a>
             </div>
         </nav>
+        
+        <!-- Version Information -->
+        <div class="version-info">
+            <p class="version-text">GPU Monitor <span class="version-number">v2.1.0</span></p>
+        </div>
     </div>
 
     <!-- Main Content -->

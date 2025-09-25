@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  gpumon:
+    build:
+      context: .
+      dockerfile: Dockerfile.remote
+    container_name: gpumon-remote
+    ports:
+      - "8090:8090"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=8090
+      - RRD_DATA_PATH=/app/data
+    volumes:
+      # Mount RRD data directory - UPDATE THIS PATH FOR YOUR SYSTEM
+      - /opt/docker/volumes/docker-observium_config/_data/rrd:/app/data:ro
+      # Mount logs directory
+      - ./logs:/app/logs
+      # Mount SSL certificates if using HTTPS
+      - ./ssl:/app/ssl:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - gpumon-network
+    # Security: Run as root to access RRD files (adjust as needed)
+    user: "0:0"
+
+networks:
+  gpumon-network:
+    driver: bridge
+
+# Optional: Add logging configuration
+logging:
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"

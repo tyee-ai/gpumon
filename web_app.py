@@ -1,4 +1,4 @@
-#!/usr/bin/env python33
+#!/usr/bin/env python3
 """
 GPU RRD Monitor Web Frontend
 Provides web interface for GPU temperature analysis
@@ -7,6 +7,7 @@ Provides web interface for GPU temperature analysis
 from flask import Flask, render_template, request, jsonify, make_response, send_file, session, redirect, url_for
 import subprocess
 import json
+import sys
 from datetime import datetime, timedelta
 def get_site_and_cluster(ip_address):
     """Determine site and cluster based on IP address"""
@@ -54,77 +55,7 @@ CREDENTIALS = {
 }
 
 # Configuration
-SITES = {
-    "DFW2": {
-        "name": "Dallas-Fort Worth 2",
-        "subnet": "10.4",
-        "description": "Dallas-Fort Worth Data Center 2",
-        "total_gpu_nodes": 254,
-        "total_gpus": 2032,
-        "gpus_per_node": 8,
-        "rrd_path": "/opt/docker/volumes/docker-observium_config/_data/rrd",
-        "ip_ranges": {
-            "Cluster 1": {
-                "start": "10.4.11.1",
-                "end": "10.4.11.127",
-                "count": 127
-            },
-            "Cluster 2": {
-                "start": "10.4.21.1",
-                "end": "10.4.21.127",
-                "count": 127
-            }
-        }
-    },
-    "SITE2": {
-        "name": "Site 2",
-        "subnet": "10.5",
-        "description": "Site 2 Data Center",
-        "total_gpu_nodes": 128,
-        "total_gpus": 1024,
-        "gpus_per_node": 8,
-        "rrd_path": "/opt/docker/volumes/site2_observium_config/_data/rrd",
-        "ip_ranges": {
-            "Cluster 1": {
-                "start": "10.5.11.1",
-                "end": "10.5.11.127",
-                "count": 127
-            }
-        }
-    },
-    "SITE3": {
-        "name": "Site 3",
-        "subnet": "10.6",
-        "description": "Site 3 Data Center",
-        "total_gpu_nodes": 96,
-        "total_gpus": 768,
-        "gpus_per_node": 8,
-        "rrd_path": "/opt/docker/volumes/site3_observium_config/_data/rrd",
-        "ip_ranges": {
-            "Cluster 1": {
-                "start": "10.6.11.1",
-                "end": "10.6.11.96",
-                "count": 96
-            }
-        }
-    },
-    "SITE4": {
-        "name": "Site 4",
-        "subnet": "10.7",
-        "description": "Site 4 Data Center",
-        "total_gpu_nodes": 64,
-        "total_gpus": 512,
-        "gpus_per_node": 8,
-        "rrd_path": "/opt/docker/volumes/site4_observium_config/_data/rrd",
-        "ip_ranges": {
-            "Cluster 1": {
-                "start": "10.7.11.1",
-                "end": "10.7.11.64",
-                "count": 64
-            }
-        }
-    }
-}
+from site_config import SITE_CONFIGS as SITES
 
 DEFAULT_SITE = "DFW2"
 
@@ -267,7 +198,7 @@ def run_analysis():
         
         # Get site configuration
         site_config = SITES[site]
-        site_id = site_config['subnet'].split('.')[1]  # Extract "4" from "10.4"
+        subnet = site_config['subnet']  # Use full subnet like "10.4" or "172.16"
         
         # Use site-specific RRD path if available, otherwise fall back to environment variable
         site_rrd_path = site_config.get('rrd_path')
@@ -296,7 +227,7 @@ def run_analysis():
         cmd = [
             'python3', 'gpu_monitor.py',
             "--base-path", rrd_base_path,
-            '--site', site_id,
+            '--site', site,
             '--full',
             '--start-date', start_date,
             '--end-date', end_date
