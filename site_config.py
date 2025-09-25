@@ -6,10 +6,10 @@ Shared site configuration for GPU monitoring system
 SITE_CONFIGS = {
     "DFW1": {
         "name": "Dallas-Fort Worth 1",
-        "subnet": "10.19.21,10.19.31",
-        "description": "Allen Texas Data Center - 254 ZGPU Nodes",
-        "total_gpu_nodes": 254,
-        "total_gpus": 2032,
+        "subnet": "172.16.4,10.19.21,10.19.31,10.19.41",
+        "description": "Allen Texas Data Center - 508 ZGPU Nodes",
+        "total_gpu_nodes": 508,
+        "total_gpus": 4064,
         "gpus_per_node": 8,
         "rrd_path": "/opt/docker/volumes/docker-observium_config/_data/rrd",
         "gpu_map": {
@@ -23,6 +23,11 @@ SITE_CONFIGS = {
             "1.11": "GPU_28",
         },
         "ip_ranges": {
+            "Cluster 1": {
+                "start": "172.16.4.1",
+                "end": "172.16.4.254",
+                "count": 127
+            },
             "Cluster 2": {
                 "start": "10.19.21.1",
                 "end": "10.19.21.254",
@@ -31,6 +36,11 @@ SITE_CONFIGS = {
             "Cluster 3": {
                 "start": "10.19.31.1",
                 "end": "10.19.31.254",
+                "count": 127
+            },
+            "Cluster 4": {
+                "start": "10.19.41.1",
+                "end": "10.19.41.254",
                 "count": 127
             }
         }
