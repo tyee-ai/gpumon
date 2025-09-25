@@ -23,12 +23,12 @@ SITE_CONFIGS = {
             "1.11": "GPU_28",
         },
         "ip_ranges": {
-            "Cluster 1": {
+            "Cluster 2": {
                 "start": "10.19.21.1",
                 "end": "10.19.21.254",
                 "count": 127
             },
-            "Cluster 2": {
+            "Cluster 3": {
                 "start": "10.19.31.1",
                 "end": "10.19.31.254",
                 "count": 127
