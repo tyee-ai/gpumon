@@ -627,6 +627,14 @@
         .table-responsive {
             overflow-x: auto;
             margin-top: 16px;
+            font-size: 0.85rem;
+        }
+        
+        .table-responsive th,
+        .table-responsive td {
+            padding: 8px 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
         
         .table th,
@@ -756,6 +764,7 @@
             border: 1px solid #dee2e6;
             border-radius: 4px;
             overflow: hidden;
+            font-size: 0.85rem;
         }
         
         .custom-table-header {
@@ -769,11 +778,12 @@
         }
         
         .custom-table-cell {
-            padding: 12px 8px;
+            padding: 6px 8px;
             border-right: 1px solid #dee2e6;
             display: flex;
             align-items: center;
             box-sizing: border-box;
+            font-size: 0.8rem;
         }
         
         .custom-table-cell:last-child {
@@ -1137,25 +1147,15 @@
                     </h3>
                     <form id="analysisForm">
                         <div class="row g-3">
-                            <div class="col-lg-3 col-md-6">
-                                <label for="site" class="form-label">Site</label>
-                                <select class="form-select" id="site" name="site" required>
-                                    {% for site_code, site_info in sites.items() %}
-                                        <option value="{{ site_code }}" {% if site_code == default_site %}selected{% endif %}>
-                                            {{ site_code }} - {{ site_info.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-lg-3 col-md-6">
+                            <div class="col-lg-4 col-md-6">
                                 <label for="start_date" class="form-label">Start Date</label>
                                 <input type="date" class="form-control" id="start_date" name="start_date" required>
                             </div>
-                            <div class="col-lg-3 col-md-6">
+                            <div class="col-lg-4 col-md-6">
                                 <label for="end_date" class="form-label">End Date</label>
                                 <input type="date" class="form-control" id="end_date" name="end_date" required>
                             </div>
-                            <div class="col-lg-3 col-md-6">
+                            <div class="col-lg-4 col-md-6">
                                 <label for="alert_type" class="form-label">Alert Type</label>
                                 <select class="form-select" id="alert_type" name="alert_type" required>
                                     <option value="throttled">Throttled Only</option>
@@ -1256,6 +1256,9 @@
         let currentSite = '{{ default_site }}';
         let currentSiteConfig = {{ sites|tojson }};
         
+        // Make currentSite available globally
+        window.currentSite = currentSite;
+        
         // Function to change site
         function changeSite(siteCode) {
             if (siteCode !== currentSite) {
@@ -1266,6 +1269,7 @@
                 document.querySelector(`[data-site="${siteCode}"]`).classList.add('active');
                 
                 currentSite = siteCode;
+                window.currentSite = siteCode; // Update global variable
                 document.getElementById('currentSite').textContent = siteCode;
                 
                 // Update page title and description
@@ -1277,9 +1281,20 @@
                         `${siteConfig.name} GPU Temperature Analysis & Alerting System`;
                 }
                 
-                // You can add more site-specific functionality here
+                // Clear any existing results when switching sites
+                clearResults();
+                
                 console.log(`Switched to site: ${siteCode}`);
             }
+        }
+        
+        // Function to clear results
+        function clearResults() {
+            const throttledContainer = document.getElementById('throttledAlerts');
+            const failedContainer = document.getElementById('thermallyFailedAlerts');
+            
+            if (throttledContainer) throttledContainer.innerHTML = '';
+            if (failedContainer) failedContainer.innerHTML = '';
         }
     </script>
 </body>

@@ -5,7 +5,7 @@ let isAnalysisRunning = false;
 // Helper function to generate DNS name from IP address
 function generateDNSName(ipAddress) {
     if (!ipAddress) return "Unknown";
-    return `${ipAddress}.voltagepark.net`;
+    return ipAddress;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -84,8 +84,14 @@ function runAnalysis() {
     const formData = new FormData(document.getElementById('analysisForm'));
     const params = new URLSearchParams();
     
+    // Use current site from tabs instead of form
+    const currentSite = window.currentSite || 'DFW2';
+    params.append('site', currentSite);
+    
     for (let [key, value] of formData.entries()) {
-        params.append(key, value);
+        if (key !== 'site') { // Skip site from form since we're using tabs
+            params.append(key, value);
+        }
     }
     
     // Make API call
