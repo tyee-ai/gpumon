@@ -20,6 +20,65 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
+        /* Site Selection Tabs */
+        .site-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .site-tab {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 200px;
+        }
+        
+        .site-tab:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .site-tab.active {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            box-shadow: 0 6px 12px rgba(0,123,255,0.3);
+        }
+        
+        .site-tab-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .site-tab-name {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .site-tab.active .site-tab-name {
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .site-tab-stats {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .site-tab.active .site-tab-stats {
+            color: rgba(255,255,255,0.8);
+        }
+        
         .gpu-status-container {
             margin-bottom: 2rem;
         }
@@ -288,21 +347,23 @@
         </div>
 
         <!-- Site Selection -->
+        <!-- Site Selection Tabs -->
         <div class="container mt-3">
             <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <label for="siteSelect" class="form-label fw-bold">Select Site:</label>
-                            <select class="form-select" id="siteSelect" onchange="changeSite()">
-                                {% for site_code, site_info in sites.items() %}
-                                    <option value="{{ site_code }}" {% if site_code == default_site %}selected{% endif %}>
-                                        {{ site_code }} - {{ site_info.name }} ({{ site_info.total_gpu_nodes }} nodes, {{ site_info.total_gpus }} GPUs)
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            <small class="text-muted">Current site: <span id="currentSite">{{ default_site }}</span></small>
+                <div class="col-md-8">
+                    <div class="site-tabs">
+                        {% for site_code, site_info in sites.items() %}
+                        <div class="site-tab {% if site_code == default_site %}active{% endif %}" 
+                             data-site="{{ site_code }}" 
+                             onclick="changeSite('{{ site_code }}')">
+                            <div class="site-tab-header">{{ site_code }}</div>
+                            <div class="site-tab-name">{{ site_info.name }}</div>
+                            <div class="site-tab-stats">{{ site_info.total_gpu_nodes }} nodes, {{ site_info.total_gpus }} GPUs</div>
                         </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Current site: <span id="currentSite">{{ default_site }}</span></small>
                     </div>
                 </div>
             </div>
@@ -468,16 +529,28 @@
         };
         
         // Function to change site
-        function changeSite() {
-            const siteSelect = document.getElementById('siteSelect');
-            const newSite = siteSelect.value;
-            
-            if (newSite !== currentSite) {
-                currentSite = newSite;
-                document.getElementById('currentSite').textContent = newSite;
+        function changeSite(siteCode) {
+            if (siteCode !== currentSite) {
+                // Update active tab
+                document.querySelectorAll('.site-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-site="${siteCode}"]`).classList.add('active');
+                
+                currentSite = siteCode;
+                document.getElementById('currentSite').textContent = siteCode;
+                
+                // Update site configuration
+                updateSiteConfig(siteCode);
                 
                 // Update GPU configuration based on new site
-                updateGPUConfigForSite(newSite);
+                updateGPUConfigForSite(siteCode);
+                
+                // Update infrastructure values
+                document.getElementById('totalDevices').textContent = SITE_CONFIG.total_gpu_nodes;
+                document.getElementById('totalGPUs').textContent = SITE_CONFIG.total_gpus;
+                document.getElementById('plannedNodes').textContent = SITE_CONFIG.total_gpu_nodes;
+                document.getElementById('plannedGPUs').textContent = SITE_CONFIG.total_gpus;
                 
                 // Reload analytics data for new site
                 loadAnalyticsData();
@@ -537,10 +610,12 @@
             if (siteParam && currentSiteConfig[siteParam]) {
                 currentSite = siteParam;
                 document.getElementById('currentSite').textContent = currentSite;
-                const siteSelect = document.getElementById('siteSelect');
-                if (siteSelect) {
-                    siteSelect.value = currentSite;
-                }
+                
+                // Update active tab
+                document.querySelectorAll('.site-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-site="${siteParam}"]`).classList.add('active');
             }
             
             // Update site configuration based on current site
