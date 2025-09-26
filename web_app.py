@@ -287,7 +287,7 @@ def run_analysis():
         
         # Parse the output to extract results
         output = result.stdout
-        results = parse_analysis_output(output, alert_type)
+        results = parse_analysis_output(output, alert_type, site)
         
         # Sort alerts by date and cluster
         if "throttled" in results and results["throttled"]:
@@ -569,9 +569,9 @@ def format_thermally_failed_alerts(alerts):
     return formatted
 
 
-def parse_analysis_output(output, alert_type):
+def parse_analysis_output(output, alert_type, site):
     """Parse the analysis output and filter by alert type"""
-    print(f"Debug: Starting parse_analysis_output with alert_type: {alert_type}")
+    print(f"Debug: Starting parse_analysis_output with alert_type: {alert_type}, site: {site}")
     results = {
         'throttled': [],
         'thermally_failed': [],
