@@ -335,11 +335,11 @@
                     <span class="summary-stat-label">Total Throttled GPUs</span>
                 </div>
                 <div class="summary-stat">
-                    <span class="summary-stat-value" id="totalDevices">254</span>
+                    <span class="summary-stat-value" id="totalDevices">0</span>
                     <span class="summary-stat-label">Total GPU Nodes</span>
                 </div>
                 <div class="summary-stat">
-                    <span class="summary-stat-value" id="totalGPUs">2032</span>
+                    <span class="summary-stat-value" id="totalGPUs">0</span>
                     <span class="summary-stat-label">Total GPUs</span>
                 </div>
                 <div class="summary-stat">
@@ -351,11 +351,11 @@
             <!-- GPU Infrastructure Summary -->
             <div class="summary-stats" style="margin-top: 1rem;">
                 <div class="summary-stat">
-                    <span class="summary-stat-value" style="color: #10b981;">254</span>
+                    <span class="summary-stat-value" id="plannedNodes" style="color: #10b981;">0</span>
                     <span class="summary-stat-label">Planned GPU Nodes</span>
                 </div>
                 <div class="summary-stat">
-                    <span class="summary-stat-value" style="color: #3b82f6;">2032</span>
+                    <span class="summary-stat-value" id="plannedGPUs" style="color: #3b82f6;">0</span>
                     <span class="summary-stat-label">Planned Total GPUs</span>
                 </div>
             </div>
@@ -494,8 +494,8 @@
             }
         }
         
-        // Site configuration constants
-        const SITE_CONFIG = {
+        // Site configuration - will be updated dynamically
+        let SITE_CONFIG = {
             total_gpu_nodes: 254,
             total_gpus: 2032,
             gpus_per_node: 8,
@@ -505,10 +505,51 @@
             }
         };
         
+        // Function to update site configuration based on selected site
+        function updateSiteConfig(siteCode) {
+            const siteConfig = currentSiteConfig[siteCode];
+            if (siteConfig) {
+                SITE_CONFIG.total_gpu_nodes = siteConfig.total_gpu_nodes;
+                SITE_CONFIG.total_gpus = siteConfig.total_gpus;
+                SITE_CONFIG.gpus_per_node = siteConfig.gpus_per_node;
+                
+                // Update clusters based on site's IP ranges
+                SITE_CONFIG.clusters = {};
+                if (siteConfig.ip_ranges) {
+                    Object.keys(siteConfig.ip_ranges).forEach((clusterName, index) => {
+                        const clusterData = siteConfig.ip_ranges[clusterName];
+                        SITE_CONFIG.clusters[`C${index + 1}`] = {
+                            gpu_node_count: clusterData.count,
+                            total_gpus: clusterData.count * siteConfig.gpus_per_node
+                        };
+                    });
+                }
+            }
+        }
+        
         const GPU_IDS = Object.keys(GPU_CONFIG);
         
         // Initialize analytics dashboard
         function initializeAnalytics() {
+            // Check for site parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const siteParam = urlParams.get('site');
+            if (siteParam && currentSiteConfig[siteParam]) {
+                currentSite = siteParam;
+                document.getElementById('currentSite').textContent = currentSite;
+                const siteSelect = document.getElementById('siteSelect');
+                if (siteSelect) {
+                    siteSelect.value = currentSite;
+                }
+            }
+            
+            // Update site configuration based on current site
+            updateSiteConfig(currentSite);
+            
+            // Debug logging
+            console.log('Current site:', currentSite);
+            console.log('SITE_CONFIG after update:', SITE_CONFIG);
+            
             // Set default dates (last 30 days)
             const endDate = new Date();
             const startDate = new Date(endDate.getTime() - (30 * 60 * 60 * 1000 * 24));
@@ -519,6 +560,8 @@
             // Always ensure infrastructure values are displayed correctly
             document.getElementById('totalDevices').textContent = SITE_CONFIG.total_gpu_nodes;
             document.getElementById('totalGPUs').textContent = SITE_CONFIG.total_gpus;
+            document.getElementById('plannedNodes').textContent = SITE_CONFIG.total_gpu_nodes;
+            document.getElementById('plannedGPUs').textContent = SITE_CONFIG.total_gpus;
             
             // Load initial data
             loadAnalyticsData();
@@ -629,12 +672,14 @@
                         // Update summary statistics
             document.getElementById('totalThrottled').textContent = finalThrottledCount;
             
-            // Always use the correct infrastructure values (254 nodes, 2032 GPUs)
-            const totalGPUs = 2032; // Fixed value
-            const totalNodes = 254; // Fixed value
+            // Use the site configuration values
+            const totalGPUs = SITE_CONFIG.total_gpus;
+            const totalNodes = SITE_CONFIG.total_gpu_nodes;
             
             document.getElementById('totalDevices').textContent = totalNodes;
             document.getElementById('totalGPUs').textContent = totalGPUs;
+            document.getElementById('plannedNodes').textContent = totalNodes;
+            document.getElementById('plannedGPUs').textContent = totalGPUs;
             
             // Debug: Log what we're setting
             console.log('Setting totalDevices to:', totalNodes);
