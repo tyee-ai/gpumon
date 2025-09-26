@@ -255,11 +255,16 @@ def run_analysis():
             print(f"Debug: stdout: {result.stdout[:500] if result.stdout else 'No stdout'}")
             
             # Return fallback data instead of error for better user experience
+            # Get site configuration for correct infrastructure values
+            site_config = SITES.get(site, {})
+            planned_gpu_nodes = site_config.get('total_gpu_nodes', 254)
+            planned_total_gpus = site_config.get('total_gpus', 2032)
+            
             fallback_results = {
                 'summary': {
                     'total_devices': 253,
-                    'planned_gpu_nodes': 254,
-                    'planned_total_gpus': 2032,
+                    'planned_gpu_nodes': planned_gpu_nodes,
+                    'planned_total_gpus': planned_total_gpus,
                     'throttled_count': 0,
                     'suspicious_count': 0,
                     'normal_count': 'N/A',
@@ -677,10 +682,16 @@ def parse_analysis_output(output, alert_type):
     
     # Generate summary from the actual data
     print(f"Debug: Summary generation - throttled: {len(results['throttled'])}, thermally_failed: {len(results['thermally_failed'])}")
+    
+    # Get site configuration for correct infrastructure values
+    site_config = SITES.get(site, {})
+    planned_gpu_nodes = site_config.get('total_gpu_nodes', 254)
+    planned_total_gpus = site_config.get('total_gpus', 2032)
+    
     results['summary'] = {
         'total_devices': 253,  # Default to 253 GPU devices (from our infrastructure)
-        'planned_gpu_nodes': 254,  # Planned infrastructure
-        'planned_total_gpus': 2032,  # Planned total GPUs (254 * 8)
+        'planned_gpu_nodes': planned_gpu_nodes,  # Use site-specific infrastructure
+        'planned_total_gpus': planned_total_gpus,  # Use site-specific infrastructure
         'throttled_count': len(results["throttled"]) if "throttled" in results else 0,
         'suspicious_count': len(results["thermally_failed"]) if "thermally_failed" in results else 0,
         'normal_count': 'N/A',  # We don't have this info from the current output

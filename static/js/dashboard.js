@@ -184,7 +184,7 @@ function displaySummaryCards(summary) {
     html += `
         <div class="summary-card summary-gpu-nodes">
             <h4><i class="fas fa-microchip text-success"></i></h4>
-            <h3>${summary.planned_gpu_nodes || 254}</h3>
+            <h3>${summary.planned_gpu_nodes || 'N/A'}</h3>
             <p class="text-muted">GPU Nodes</p>
         </div>
     `;
@@ -193,7 +193,7 @@ function displaySummaryCards(summary) {
     html += `
         <div class="summary-card summary-total-gpus">
             <h4><i class="fas fa-server text-info"></i></h4>
-            <h3>${summary.planned_total_gpus || 2032}</h3>
+            <h3>${summary.planned_total_gpus || 'N/A'}</h3>
             <p class="text-muted">Total GPUs</p>
         </div>
     `;
