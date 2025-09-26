@@ -79,7 +79,7 @@ SITE_CONFIGS = {
 }
 
 # Default site
-DEFAULT_SITE = "DFW2"
+DEFAULT_SITE = "DFW1"
 
 # Helper functions
 def get_site_by_subnet(subnet):
