@@ -32,6 +32,65 @@
             margin: 0.5rem 0 0 0;
             opacity: 0.9;
         }
+        
+        /* Site Selection Tabs - Compact Version */
+        .site-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .site-tab {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 140px;
+        }
+        
+        .site-tab:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+            transform: translateY(-1px);
+        }
+        
+        .site-tab.active {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        }
+        
+        .site-tab-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .site-tab-name {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .site-tab.active .site-tab-name {
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .site-tab-stats {
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .site-tab.active .site-tab-stats {
+            color: rgba(255,255,255,0.8);
+        }
 
         .content-wrapper {
             padding: 2rem;
@@ -1042,7 +1101,29 @@
                 <div class="dashboard-header">
                     <div class="container">
                         <h1><i class="fas fa-microchip icon"></i> GPU Thermal Query Tool</h1>
-                        <p>DFW2 Data Center GPU Temperature Analysis & Alerting System</p>
+                        <p>GPU Temperature Analysis & Alerting System</p>
+                    </div>
+                </div>
+
+                <!-- Site Selection Tabs -->
+                <div class="container mt-3">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="site-tabs">
+                                {% for site_code, site_info in sites.items() %}
+                                <div class="site-tab {% if site_code == default_site %}active{% endif %}" 
+                                     data-site="{{ site_code }}" 
+                                     onclick="changeSite('{{ site_code }}')">
+                                    <div class="site-tab-header">{{ site_code }}</div>
+                                    <div class="site-tab-name">{{ site_info.name }}</div>
+                                    <div class="site-tab-stats">{{ site_info.total_gpu_nodes }} nodes, {{ site_info.total_gpus }} GPUs</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="text-center mt-3">
+                                <small class="text-muted">Current site: <span id="currentSite">{{ default_site }}</span></small>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1167,6 +1248,38 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/dashboard.js?v={{ range(1, 10000) | random }}&t={{ range(1, 100000) | random }}"></script>
+    
+    <script>
+        // Site configuration
+        let currentSite = '{{ default_site }}';
+        let currentSiteConfig = {{ sites|tojson }};
+        
+        // Function to change site
+        function changeSite(siteCode) {
+            if (siteCode !== currentSite) {
+                // Update active tab
+                document.querySelectorAll('.site-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-site="${siteCode}"]`).classList.add('active');
+                
+                currentSite = siteCode;
+                document.getElementById('currentSite').textContent = siteCode;
+                
+                // Update page title and description
+                const siteConfig = currentSiteConfig[siteCode];
+                if (siteConfig) {
+                    document.querySelector('.dashboard-header h1').innerHTML = 
+                        `<i class="fas fa-microchip icon"></i> GPU Thermal Query Tool - ${siteCode}`;
+                    document.querySelector('.dashboard-header p').textContent = 
+                        `${siteConfig.name} GPU Temperature Analysis & Alerting System`;
+                }
+                
+                // You can add more site-specific functionality here
+                console.log(`Switched to site: ${siteCode}`);
+            }
+        }
+    </script>
 </body>
 </html>
 
