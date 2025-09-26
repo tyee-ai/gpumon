@@ -2,6 +2,12 @@
 
 let isAnalysisRunning = false;
 
+// Helper function to generate DNS name from IP address
+function generateDNSName(ipAddress) {
+    if (!ipAddress) return "Unknown";
+    return `${ipAddress}.voltagepark.net`;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - dashboard.js loaded successfully');
     
@@ -257,7 +263,7 @@ function displayThrottledAlerts(alerts) {
         if (!alerts || alerts.length === 0) {
             console.log('No throttled alerts to display');
             const row = document.createElement("tr");
-            row.innerHTML = "<td colspan=\"9\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
+            row.innerHTML = "<td colspan=\"10\" class=\"text-center text-success\">✅ No throttled GPUs found</td>";
             container.appendChild(row);
             return;
         }
@@ -272,6 +278,7 @@ function displayThrottledAlerts(alerts) {
                     <td><strong>${alert.site || "Unknown"}</strong></td>
                     <td><strong>${alert.cluster || "Unknown"}</strong></td>
                     <td><strong>${alert.device}</strong></td>
+                    <td><strong class="text-info">${generateDNSName(alert.device)}</strong></td>
                     <td><strong>${alert.gpu_id}</strong></td>
                     <td><strong class="text-danger">${alert.max_temp}&deg;C</strong></td>
                     <td>${formatTimestamp(alert.first_date)}</td>
@@ -316,53 +323,59 @@ function displayThermallyFailedAlerts(alerts) {
         // Create each cell individually to ensure proper structure
         const siteCell = document.createElement("div");
         siteCell.className = "custom-table-cell";
-        siteCell.style.width = "8%";
+        siteCell.style.width = "7%";
         siteCell.innerHTML = `<strong>${alert.site || "Unknown"}</strong>`;
         
         const clusterCell = document.createElement("div");
         clusterCell.className = "custom-table-cell";
-        clusterCell.style.width = "8%";
+        clusterCell.style.width = "7%";
         clusterCell.innerHTML = `<strong>${alert.cluster || "Unknown"}</strong>`;
         
         const deviceCell = document.createElement("div");
         deviceCell.className = "custom-table-cell";
-        deviceCell.style.width = "15%";
+        deviceCell.style.width = "12%";
         deviceCell.innerHTML = `<strong>${alert.device}</strong>`;
+        
+        const dnsCell = document.createElement("div");
+        dnsCell.className = "custom-table-cell";
+        dnsCell.style.width = "15%";
+        dnsCell.innerHTML = `<strong class="text-info">${generateDNSName(alert.device)}</strong>`;
         
         const gpuCell = document.createElement("div");
         gpuCell.className = "custom-table-cell";
-        gpuCell.style.width = "10%";
+        gpuCell.style.width = "8%";
         gpuCell.innerHTML = `<strong>${alert.gpu_id}</strong>`;
         
         const tempCell = document.createElement("div");
         tempCell.className = "custom-table-cell";
-        tempCell.style.width = "12%";
+        tempCell.style.width = "10%";
         tempCell.innerHTML = `<strong class="text-warning">${alert.max_temp}&deg;C</strong>`;
         
         const firstDateCell = document.createElement("div");
         firstDateCell.className = "custom-table-cell";
-        firstDateCell.style.width = "15%";
+        firstDateCell.style.width = "12%";
         firstDateCell.innerHTML = formatTimestamp(alert.first_date);
         
         const lastDateCell = document.createElement("div");
         lastDateCell.className = "custom-table-cell";
-        lastDateCell.style.width = "15%";
+        lastDateCell.style.width = "12%";
         lastDateCell.innerHTML = formatTimestamp(alert.last_date);
         
         const daysCell = document.createElement("div");
         daysCell.className = "custom-table-cell";
-        daysCell.style.width = "12%";
+        daysCell.style.width = "10%";
         daysCell.innerHTML = `<strong class="${alert.days_failed === 1 ? 'text-success' : 'text-danger'}">${alert.days_failed} day${alert.days_failed > 1 ? 's' : ''}</strong>`;
         
         const countCell = document.createElement("div");
         countCell.className = "custom-table-cell";
-        countCell.style.width = "10%";
+        countCell.style.width = "7%";
         countCell.innerHTML = `<span class="badge bg-dark">${alert.alert_count || 1}</span>`;
         
         // Append all cells to the row
         row.appendChild(siteCell);
         row.appendChild(clusterCell);
         row.appendChild(deviceCell);
+        row.appendChild(dnsCell);
         row.appendChild(gpuCell);
         row.appendChild(tempCell);
         row.appendChild(firstDateCell);
