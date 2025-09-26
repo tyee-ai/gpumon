@@ -56,9 +56,7 @@ CREDENTIALS = {
 }
 
 # Configuration
-from site_config import SITE_CONFIGS as SITES
-
-DEFAULT_SITE = "DFW2"
+from site_config import SITE_CONFIGS as SITES, DEFAULT_SITE
 
 # Get HTTPS port from environment or use default
 HTTPS_PORT = os.environ.get('FLASK_PORT', '8443')
