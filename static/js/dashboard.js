@@ -2,11 +2,28 @@
 
 let isAnalysisRunning = false;
 
-// Helper function to generate DNS name from IP address and GPU ID
+// Helper function to generate DNS name from IP address
 function generateDNSName(ipAddress, gpuId) {
     if (!ipAddress) return "Unknown";
-    if (!gpuId) return `${ipAddress}.voltagepark.net`;
-    return `${ipAddress}.${gpuId}.voltagepark.net`;
+    
+    // Extract the last octet from IP address for hostname generation
+    const lastOctet = ipAddress.split('.').pop();
+    
+    // Generate DNS name based on IP pattern
+    if (ipAddress.startsWith('10.19.21.')) {
+        return `g${lastOctet}-i.aln1.voltagepark.net`;
+    } else if (ipAddress.startsWith('10.19.31.')) {
+        return `g${lastOctet}-i.aln2.voltagepark.net`;
+    } else if (ipAddress.startsWith('10.19.41.')) {
+        return `g${lastOctet}-i.aln3.voltagepark.net`;
+    } else if (ipAddress.startsWith('172.16.4.')) {
+        return `g${lastOctet}-i.aln4.voltagepark.net`;
+    } else if (ipAddress.startsWith('10.4.')) {
+        return `g${lastOctet}-i.dfw2.voltagepark.net`;
+    } else {
+        // Fallback for unknown IP patterns
+        return `${ipAddress}.voltagepark.net`;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
