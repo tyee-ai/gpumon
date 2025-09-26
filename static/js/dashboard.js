@@ -103,7 +103,7 @@ function runAnalysis() {
     const params = new URLSearchParams();
     
     // Use current site from tabs instead of form
-    const currentSite = window.currentSite || 'DFW2';
+    const currentSite = window.currentSite || 'DFW1';
     params.append('site', currentSite);
     
     for (let [key, value] of formData.entries()) {
