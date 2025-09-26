@@ -301,8 +301,8 @@ function displayThrottledAlerts(alerts) {
                 row.innerHTML = `
                     <td><strong>${alert.site || "Unknown"}</strong></td>
                     <td><strong>${alert.cluster || "Unknown"}</strong></td>
-                    <td><strong>${alert.device}</strong></td>
-                    <td><strong class="text-info">${generateDNSName(alert.device, alert.gpu_id)}</strong></td>
+        <td><strong><a href="https://${alert.device}" target="_blank" class="text-primary text-decoration-none">${alert.device}</a></strong></td>
+        <td><strong class="text-success">${generateDNSName(alert.device, alert.gpu_id)}</strong></td>
                     <td><strong>${alert.gpu_id}</strong></td>
                     <td><strong class="text-danger">${alert.max_temp}&deg;C</strong></td>
                     <td>${formatTimestamp(alert.first_date)}</td>
@@ -358,12 +358,12 @@ function displayThermallyFailedAlerts(alerts) {
         const deviceCell = document.createElement("div");
         deviceCell.className = "custom-table-cell";
         deviceCell.style.width = "10%";
-        deviceCell.innerHTML = `<strong>${alert.device}</strong>`;
+        deviceCell.innerHTML = `<strong><a href="https://${alert.device}" target="_blank" class="text-primary text-decoration-none">${alert.device}</a></strong>`;
         
         const dnsCell = document.createElement("div");
         dnsCell.className = "custom-table-cell";
         dnsCell.style.width = "18%";
-        dnsCell.innerHTML = `<strong class="text-info">${generateDNSName(alert.device, alert.gpu_id)}</strong>`;
+        dnsCell.innerHTML = `<strong class="text-success">${generateDNSName(alert.device, alert.gpu_id)}</strong>`;
         
         const gpuCell = document.createElement("div");
         gpuCell.className = "custom-table-cell";
