@@ -50,6 +50,7 @@ app = Flask(__name__)
 
 # Authentication configuration
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'gpumon-secret-key-change-in-production')
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 CREDENTIALS = {
     'gpumon': 'v0lt4g3p4rk'
 }
