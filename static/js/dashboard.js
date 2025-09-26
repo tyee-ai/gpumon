@@ -2,10 +2,11 @@
 
 let isAnalysisRunning = false;
 
-// Helper function to generate DNS name from IP address
-function generateDNSName(ipAddress) {
+// Helper function to generate DNS name from IP address and GPU ID
+function generateDNSName(ipAddress, gpuId) {
     if (!ipAddress) return "Unknown";
-    return ipAddress;
+    if (!gpuId) return `${ipAddress}.voltagepark.net`;
+    return `${ipAddress}.${gpuId}.voltagepark.net`;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -284,7 +285,7 @@ function displayThrottledAlerts(alerts) {
                     <td><strong>${alert.site || "Unknown"}</strong></td>
                     <td><strong>${alert.cluster || "Unknown"}</strong></td>
                     <td><strong>${alert.device}</strong></td>
-                    <td><strong class="text-info">${generateDNSName(alert.device)}</strong></td>
+                    <td><strong class="text-info">${generateDNSName(alert.device, alert.gpu_id)}</strong></td>
                     <td><strong>${alert.gpu_id}</strong></td>
                     <td><strong class="text-danger">${alert.max_temp}&deg;C</strong></td>
                     <td>${formatTimestamp(alert.first_date)}</td>
@@ -345,7 +346,7 @@ function displayThermallyFailedAlerts(alerts) {
         const dnsCell = document.createElement("div");
         dnsCell.className = "custom-table-cell";
         dnsCell.style.width = "15%";
-        dnsCell.innerHTML = `<strong class="text-info">${generateDNSName(alert.device)}</strong>`;
+        dnsCell.innerHTML = `<strong class="text-info">${generateDNSName(alert.device, alert.gpu_id)}</strong>`;
         
         const gpuCell = document.createElement("div");
         gpuCell.className = "custom-table-cell";
