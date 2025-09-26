@@ -9,20 +9,20 @@ function generateDNSName(ipAddress, gpuId) {
     // Extract the last octet from IP address for hostname generation
     const lastOctet = ipAddress.split('.').pop();
     
-    // Generate DNS name based on IP pattern
+    // Generate DNS name based on IP pattern (without .voltagepark.net domain)
     if (ipAddress.startsWith('10.19.21.')) {
-        return `g${lastOctet}-i.aln1.voltagepark.net`;
+        return `g${lastOctet}-i.aln1`;
     } else if (ipAddress.startsWith('10.19.31.')) {
-        return `g${lastOctet}-i.aln2.voltagepark.net`;
+        return `g${lastOctet}-i.aln2`;
     } else if (ipAddress.startsWith('10.19.41.')) {
-        return `g${lastOctet}-i.aln3.voltagepark.net`;
+        return `g${lastOctet}-i.aln3`;
     } else if (ipAddress.startsWith('172.16.4.')) {
-        return `g${lastOctet}-i.aln4.voltagepark.net`;
+        return `g${lastOctet}-i.aln4`;
     } else if (ipAddress.startsWith('10.4.')) {
-        return `g${lastOctet}-i.dfw2.voltagepark.net`;
+        return `g${lastOctet}-i.dfw2`;
     } else {
         // Fallback for unknown IP patterns
-        return `${ipAddress}.voltagepark.net`;
+        return ipAddress;
     }
 }
 
@@ -347,22 +347,22 @@ function displayThermallyFailedAlerts(alerts) {
         // Create each cell individually to ensure proper structure
         const siteCell = document.createElement("div");
         siteCell.className = "custom-table-cell";
-        siteCell.style.width = "7%";
+        siteCell.style.width = "6%";
         siteCell.innerHTML = `<strong>${alert.site || "Unknown"}</strong>`;
         
         const clusterCell = document.createElement("div");
         clusterCell.className = "custom-table-cell";
-        clusterCell.style.width = "7%";
+        clusterCell.style.width = "6%";
         clusterCell.innerHTML = `<strong>${alert.cluster || "Unknown"}</strong>`;
         
         const deviceCell = document.createElement("div");
         deviceCell.className = "custom-table-cell";
-        deviceCell.style.width = "12%";
+        deviceCell.style.width = "10%";
         deviceCell.innerHTML = `<strong>${alert.device}</strong>`;
         
         const dnsCell = document.createElement("div");
         dnsCell.className = "custom-table-cell";
-        dnsCell.style.width = "15%";
+        dnsCell.style.width = "18%";
         dnsCell.innerHTML = `<strong class="text-info">${generateDNSName(alert.device, alert.gpu_id)}</strong>`;
         
         const gpuCell = document.createElement("div");
@@ -372,27 +372,27 @@ function displayThermallyFailedAlerts(alerts) {
         
         const tempCell = document.createElement("div");
         tempCell.className = "custom-table-cell";
-        tempCell.style.width = "10%";
+        tempCell.style.width = "9%";
         tempCell.innerHTML = `<strong class="text-warning">${alert.max_temp}&deg;C</strong>`;
         
         const firstDateCell = document.createElement("div");
         firstDateCell.className = "custom-table-cell";
-        firstDateCell.style.width = "12%";
+        firstDateCell.style.width = "11%";
         firstDateCell.innerHTML = formatTimestamp(alert.first_date);
         
         const lastDateCell = document.createElement("div");
         lastDateCell.className = "custom-table-cell";
-        lastDateCell.style.width = "12%";
+        lastDateCell.style.width = "11%";
         lastDateCell.innerHTML = formatTimestamp(alert.last_date);
         
         const daysCell = document.createElement("div");
         daysCell.className = "custom-table-cell";
-        daysCell.style.width = "10%";
+        daysCell.style.width = "9%";
         daysCell.innerHTML = `<strong class="${alert.days_failed === 1 ? 'text-success' : 'text-danger'}">${alert.days_failed} day${alert.days_failed > 1 ? 's' : ''}</strong>`;
         
         const countCell = document.createElement("div");
         countCell.className = "custom-table-cell";
-        countCell.style.width = "7%";
+        countCell.style.width = "6%";
         countCell.innerHTML = `<span class="badge bg-dark">${alert.alert_count || 1}</span>`;
         
         // Append all cells to the row
