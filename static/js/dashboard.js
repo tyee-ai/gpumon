@@ -6,21 +6,34 @@ let isAnalysisRunning = false;
 async function generateDNSName(ipAddress, gpuId) {
     if (!ipAddress) return "Unknown";
     
+    console.log(`Starting DNS lookup for IP: ${ipAddress}`);
+    
     try {
         // Perform reverse DNS lookup
         const response = await fetch(`/api/dns-lookup?ip=${encodeURIComponent(ipAddress)}`);
+        console.log(`DNS lookup response status: ${response.status} for ${ipAddress}`);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log(`DNS lookup response data:`, data);
+            
             if (data.success && data.hostname) {
                 // Remove .voltagepark.net domain if present
-                return data.hostname.replace('.voltagepark.net', '');
+                const cleanHostname = data.hostname.replace('.voltagepark.net', '');
+                console.log(`DNS lookup successful: ${ipAddress} -> ${cleanHostname}`);
+                return cleanHostname;
+            } else {
+                console.warn(`DNS lookup failed for ${ipAddress}:`, data.error);
             }
+        } else {
+            console.warn(`DNS lookup HTTP error for ${ipAddress}: ${response.status}`);
         }
     } catch (error) {
         console.warn(`DNS lookup failed for ${ipAddress}:`, error);
     }
     
     // Fallback to IP address if DNS lookup fails
+    console.log(`Using IP address as fallback for ${ipAddress}`);
     return ipAddress;
 }
 

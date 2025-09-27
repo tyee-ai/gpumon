@@ -762,8 +762,12 @@ def dns_lookup():
         if not ip_address:
             return jsonify({'success': False, 'error': 'IP address required'})
         
+        print(f"DNS lookup request for IP: {ip_address}")
+        
         # Perform reverse DNS lookup
         hostname = socket.gethostbyaddr(ip_address)[0]
+        
+        print(f"DNS lookup successful: {ip_address} -> {hostname}")
         
         return jsonify({
             'success': True,
@@ -772,12 +776,14 @@ def dns_lookup():
         })
         
     except socket.herror as e:
+        print(f"DNS lookup failed for {ip_address}: {str(e)}")
         return jsonify({
             'success': False,
             'error': f'DNS lookup failed: {str(e)}',
             'ip': ip_address
         })
     except Exception as e:
+        print(f"Unexpected error during DNS lookup for {ip_address}: {str(e)}")
         return jsonify({
             'success': False,
             'error': f'Unexpected error: {str(e)}',
