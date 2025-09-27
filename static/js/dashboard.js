@@ -16,7 +16,8 @@ function generateDNSName(ipAddress, gpuId) {
         ipAddress.startsWith('172.16.4.')) {
         return `g${lastOctet + 127}-i.aln1`;
     } else if (ipAddress.startsWith('10.4.')) {
-        return `g${lastOctet + 127}-i.dfw2`;
+        // DFW2 pattern: gpu010{last_octet}i.dfw2
+        return `gpu010${lastOctet}i.dfw2`;
     } else {
         // Fallback for unknown IP patterns
         return ipAddress;
