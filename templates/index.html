@@ -1159,8 +1159,8 @@
                             <div class="col-lg-4 col-md-6">
                                 <label for="alert_type" class="form-label">Alert Type</label>
                                 <select class="form-select" id="alert_type" name="alert_type" required>
-                                    <option value="throttled">Throttled Only</option>
-                                    <option value="thermally_failed">Thermally Failed Only</option>
+                                    <option value="throttled">GPU ≥ 85°C</option>
+                                    <option value="thermally_failed">GPU ∆T ≥ 10°C @ idle</option>
                                     <option value="both">Both Types</option>
                                 </select>
                             </div>
@@ -1194,7 +1194,7 @@
                     <div class="alert-section" id="throttledSection">
                         <h3>
                             <i class="fas fa-fire icon" style="color: var(--danger-color);"></i>
-                            Throttled GPUs
+                            GPUs ≥ 85°C
                         </h3>
                         <div class="table-responsive">
                             <table class="table table-striped">
@@ -1208,7 +1208,7 @@
                                         <th>Temperature</th>
                                         <th>First Alert</th>
                                         <th>Last Alert</th>
-                                        <th>Days Throttled</th>
+                                        <th>Days ≥ 85°C</th>
                                         <th>Alert Count</th>
                                     </tr>
                                 </thead>
@@ -1222,7 +1222,7 @@
                     <div class="alert-section" id="thermallyFailedSection">
                         <h3>
                             <i class="fas fa-exclamation-triangle icon" style="color: var(--warning-color);"></i>
-                            Thermally Failed GPUs
+                            GPUs ∆T ≥ 10°C @ idle
                         </h3>
                         <div class="custom-table-container">
                             <div class="custom-table-header">
@@ -1235,7 +1235,7 @@
                                     <div class="custom-table-cell header-cell" style="width: 9%;">Temperature</div>
                                     <div class="custom-table-cell header-cell" style="width: 11%;">First Alert</div>
                                     <div class="custom-table-cell header-cell" style="width: 11%;">Last Alert</div>
-                                    <div class="custom-table-cell header-cell" style="width: 9%;">Days Failed</div>
+                                    <div class="custom-table-cell header-cell" style="width: 9%;">Days with ∆ ≥10°C</div>
                                     <div class="custom-table-cell header-cell" style="width: 6%;">Alert Count</div>
                                 </div>
                             </div>

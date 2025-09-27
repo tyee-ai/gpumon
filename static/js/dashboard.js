@@ -7,19 +7,16 @@ function generateDNSName(ipAddress, gpuId) {
     if (!ipAddress) return "Unknown";
     
     // Extract the last octet from IP address for hostname generation
-    const lastOctet = ipAddress.split('.').pop();
+    const lastOctet = parseInt(ipAddress.split('.').pop());
     
     // Generate DNS name based on IP pattern (without .voltagepark.net domain)
-    if (ipAddress.startsWith('10.19.21.')) {
-        return `g${lastOctet}-i.aln1`;
-    } else if (ipAddress.startsWith('10.19.31.')) {
-        return `g${lastOctet}-i.aln2`;
-    } else if (ipAddress.startsWith('10.19.41.')) {
-        return `g${lastOctet}-i.aln3`;
-    } else if (ipAddress.startsWith('172.16.4.')) {
-        return `g${lastOctet}-i.aln4`;
+    if (ipAddress.startsWith('10.19.21.') || 
+        ipAddress.startsWith('10.19.31.') || 
+        ipAddress.startsWith('10.19.41.') || 
+        ipAddress.startsWith('172.16.4.')) {
+        return `g${lastOctet + 127}-i.aln1`;
     } else if (ipAddress.startsWith('10.4.')) {
-        return `g${lastOctet}-i.dfw2`;
+        return `g${lastOctet + 127}-i.dfw2`;
     } else {
         // Fallback for unknown IP patterns
         return ipAddress;
