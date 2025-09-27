@@ -2,26 +2,26 @@
 
 let isAnalysisRunning = false;
 
-// Helper function to generate DNS name from IP address
-function generateDNSName(ipAddress, gpuId) {
+// Helper function to perform DNS lookup for IP address
+async function generateDNSName(ipAddress, gpuId) {
     if (!ipAddress) return "Unknown";
     
-    // Extract the last octet from IP address for hostname generation
-    const lastOctet = parseInt(ipAddress.split('.').pop());
-    
-    // Generate DNS name based on IP pattern (without .voltagepark.net domain)
-    if (ipAddress.startsWith('10.19.21.') || 
-        ipAddress.startsWith('10.19.31.') || 
-        ipAddress.startsWith('10.19.41.') || 
-        ipAddress.startsWith('172.16.4.')) {
-        return `g${lastOctet + 127}-i.aln1`;
-    } else if (ipAddress.startsWith('10.4.')) {
-        // DFW2 pattern: gpu010{last_octet}i.dfw2
-        return `gpu010${lastOctet}i.dfw2`;
-    } else {
-        // Fallback for unknown IP patterns
-        return ipAddress;
+    try {
+        // Perform reverse DNS lookup
+        const response = await fetch(`/api/dns-lookup?ip=${encodeURIComponent(ipAddress)}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.hostname) {
+                // Remove .voltagepark.net domain if present
+                return data.hostname.replace('.voltagepark.net', '');
+            }
+        }
+    } catch (error) {
+        console.warn(`DNS lookup failed for ${ipAddress}:`, error);
     }
+    
+    // Fallback to IP address if DNS lookup fails
+    return ipAddress;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -292,15 +292,16 @@ function displayThrottledAlerts(alerts) {
         
         console.log(`Displaying ${alerts.length} throttled alerts`);
         
-        alerts.forEach((alert, index) => {
+        alerts.forEach(async (alert, index) => {
             try {
                 console.log(`Processing alert ${index}:`, alert);
                 const row = document.createElement("tr");
+                const dnsName = await generateDNSName(alert.device, alert.gpu_id);
                 row.innerHTML = `
                     <td><strong>${alert.site || "Unknown"}</strong></td>
                     <td><strong>${alert.cluster || "Unknown"}</strong></td>
         <td><strong><a href="https://${alert.device}" target="_blank" class="text-primary text-decoration-none">${alert.device}</a></strong></td>
-        <td><strong class="text-success">${generateDNSName(alert.device, alert.gpu_id)}</strong></td>
+        <td><strong class="text-success">${dnsName}</strong></td>
                     <td><strong>${alert.gpu_id}</strong></td>
                     <td><strong class="text-danger">${alert.max_temp}&deg;C</strong></td>
                     <td>${formatTimestamp(alert.first_date)}</td>
@@ -361,7 +362,12 @@ function displayThermallyFailedAlerts(alerts) {
         const dnsCell = document.createElement("div");
         dnsCell.className = "custom-table-cell";
         dnsCell.style.width = "18%";
-        dnsCell.innerHTML = `<strong class="text-success">${generateDNSName(alert.device, alert.gpu_id)}</strong>`;
+        dnsCell.innerHTML = `<strong class="text-success">Loading...</strong>`;
+        
+        // Perform async DNS lookup
+        generateDNSName(alert.device, alert.gpu_id).then(dnsName => {
+            dnsCell.innerHTML = `<strong class="text-success">${dnsName}</strong>`;
+        });
         
         const gpuCell = document.createElement("div");
         gpuCell.className = "custom-table-cell";

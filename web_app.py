@@ -752,6 +752,38 @@ def get_sites():
     """Get available sites"""
     return jsonify(SITES)
 
+@app.route('/api/dns-lookup')
+def dns_lookup():
+    """Perform reverse DNS lookup for an IP address"""
+    try:
+        import socket
+        ip_address = request.args.get('ip')
+        
+        if not ip_address:
+            return jsonify({'success': False, 'error': 'IP address required'})
+        
+        # Perform reverse DNS lookup
+        hostname = socket.gethostbyaddr(ip_address)[0]
+        
+        return jsonify({
+            'success': True,
+            'hostname': hostname,
+            'ip': ip_address
+        })
+        
+    except socket.herror as e:
+        return jsonify({
+            'success': False,
+            'error': f'DNS lookup failed: {str(e)}',
+            'ip': ip_address
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Unexpected error: {str(e)}',
+            'ip': ip_address
+        })
+
 @app.route('/api/health')
 def health_check():
     """Health check endpoint for remote deployment debugging"""
