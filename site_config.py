@@ -79,7 +79,7 @@ SITE_CONFIGS = {
     "IAD1": {
         "name": "Sterling, VA",
         "subnet": "10.14.11,10.14.21,10.14.31,10.14.41",
-        "description": "Sterling, VA DC - 4062 GPUs",
+        "description": "Sterling, VA DC - 4064 GPUs",
         "total_gpu_nodes": 508,
         "total_gpus": 4064,
         "gpus_per_node": 8,
