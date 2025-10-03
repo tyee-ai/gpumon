@@ -8,11 +8,14 @@ services:
     container_name: gpumon-remote
     ports:
       - "8090:8090"
+      - "8443:8443"
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
       - FLASK_HOST=0.0.0.0
-      - FLASK_PORT=8090
+      - FLASK_PORT=8443
+      - HTTP_PORT=8090
+      - FLASK_SSL=true
       - RRD_DATA_PATH=/app/data
     volumes:
       # Mount RRD data directory - UPDATE THIS PATH FOR YOUR SYSTEM
