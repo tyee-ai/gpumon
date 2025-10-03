@@ -18,8 +18,9 @@ services:
       - FLASK_SSL=true
       - RRD_DATA_PATH=/app/data
     volumes:
-      # Mount RRD data directory - UPDATE THIS PATH FOR YOUR SYSTEM
+      # Mount RRD data directories for all sites
       - /opt/docker/volumes/docker-observium_config/_data/rrd:/app/data:ro
+      - /opt/docker/volumes/ce6610072ec75cc34f7d4e362f935736e47de7c0d59344d518393aa288805333/_data/rrd:/app/data_iad1:ro
       # Mount logs directory
       - ./logs:/app/logs
       # Mount SSL certificates if using HTTPS

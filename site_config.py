@@ -83,7 +83,7 @@ SITE_CONFIGS = {
         "total_gpu_nodes": 508,
         "total_gpus": 4064,
         "gpus_per_node": 8,
-        "rrd_path": "/opt/docker/volumes/ce6610072ec75cc34f7d4e362f935736e47de7c0d59344d518393aa288805333/_data/rrd",
+        "rrd_path": "/app/data_iad1",
         "gpu_map": {
             "1.4": "GPU_21",
             "1.5": "GPU_22",
